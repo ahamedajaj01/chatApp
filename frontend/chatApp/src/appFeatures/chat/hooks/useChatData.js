@@ -142,18 +142,18 @@ export default function useChatData({ routeConversationId, navigate }) {
   // WebSocket Connection Logic
 
   const accessToken = useSelector((s) => s.auth.accessToken);
-  const roomSlug = currentConv?.slug;
-  
-  useEffect(() => {
-    if (!accessToken || !roomSlug) return;
+  const convId = currentConv?.id;
 
-    webSocketService.connect(accessToken, roomSlug);
+  useEffect(() => {
+    if (!accessToken || !convId) return;
+
+    webSocketService.connect(accessToken, convId);
 
     return () => {
       // normal cleanup, allows reconnect later
       webSocketService.disconnect();
     };
-  }, [accessToken, roomSlug]);
+  }, [accessToken, convId]);
 
   return {
     conversations,

@@ -12,21 +12,21 @@ class WebSocketService {
     this.currentRoom = null;
   }
 
-  connect(token, roomName) {
-    if (!token || !roomName) return;
+  connect(token, conversationId) {
+    if (!token || !conversationId) return;
     this.shouldReconnect = true;
 
     // ✅ GUARD: already connected to same room
     if (
       this.socket &&
       this.socket.readyState === WebSocket.OPEN &&
-      this.currentRoom === roomName
+      this.currentRoom === conversationId
     ) {
       return;
     }
 
     this.token = token;
-    this.currentRoom = roomName;
+    this.currentRoom = conversationId;
 
     if (this.socket) {
       this.disconnect();
@@ -36,7 +36,7 @@ class WebSocketService {
     const urlObj = new URL(baseUrl);
     const wsProtocol = urlObj.protocol === "https:" ? "wss:" : "ws:";
 
-    const wsUrl = `${wsProtocol}//${urlObj.host}/ws/chat/${roomName}/?token=${token}`;
+    const wsUrl = `${wsProtocol}//${urlObj.host}/ws/chat/${conversationId}/?token=${token}`;
     this.socket = new WebSocket(wsUrl);
 
     this.socket.onopen = () => this.trigger("open");
