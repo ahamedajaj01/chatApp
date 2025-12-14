@@ -53,19 +53,6 @@ INSTALLED_APPS = [
 ASGI_APPLICATION = 'chatproject.asgi.application'
 
 
-
-# # Configure Channel Layers (Redis)
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [os.getenv("REDIS_URL")],
-        },
-    },
-}
-
-# For development/testing without Redis, use in-memory layer (NOT for production):
-# CHANNEL_LAYERS = {
 #     "default": {
 #         "BACKEND": "channels.layers.InMemoryChannelLayer"
 #     }

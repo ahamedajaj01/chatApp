@@ -124,13 +124,16 @@ class ConversationMessageView(APIView):
             # Broadcast to WebSocket
             channel_layer = get_channel_layer()
             group_name = f"chat_{conv.slug}"
-            async_to_sync(channel_layer.group_send)(
-                group_name,
-                {
-                    "type": "chat_message_broadcast",
-                    "message": MessageSerializer(msg).data
-                }
-            )
+            try:
+                async_to_sync(channel_layer.group_send)(
+                    group_name,
+                    {
+                        "type": "chat_message_broadcast",
+                        "message": MessageSerializer(msg).data
+                    }
+                )
+            except Exception as e:
+                print(f"Error broadcasting message to group {group_name}: {e}")
             return Response(MessageSerializer(msg).data, status=status.HTTP_201_CREATED)
 
 
