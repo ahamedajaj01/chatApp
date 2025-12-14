@@ -20,16 +20,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR/ '.env')
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "VpXfDlcuLwlgtrDBkWl1pE1INtkM9liIozAuiyB5BXK-p1R2KR3Dk1_xrzM2pOfSyJo"
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG","False").lower() == "true"
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
 
 
 # Application definition
@@ -53,9 +51,14 @@ ASGI_APPLICATION = 'chatproject.asgi.application'
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [os.getenv("REDIS_URL")],
+        },
+    },
 }
+
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -85,18 +88,19 @@ TEMPLATES = [
     },
 ]
 
+WSGI_APPLICATION = 'chatproject.wsgi.application'
 
-
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-# Database for development
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
     }
 }
-
 
 
 # Password validation
@@ -126,7 +130,14 @@ REST_FRAMEWORK = {
     ),
 }
 
-
+SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT") == "True"
+SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE") == "True"
+CSRF_COOKIE_SECURE = os.getenv("CSRF_COOKIE_SECURE") == "True"
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+CORS_ALLOW_CREDENTIALS = True
 
 
 SECURE_REFERRER_POLICY = "same-origin"
@@ -156,14 +167,8 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# for local dev
-CORS_ALLOWED_ORIGINS = [
-        "http://localhost:3000",  # Example for a React frontend
-        "http://localhost:5173",  # Example for a React frontend
-        "http://127.0.0.1:8000", # Example for local development
-        "https://your-frontend-domain.com", # Example for production
-    ]
-
+# For production
+CORS_ALLOWED_ORIGINS= os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(
@@ -176,3 +181,22 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 }
 
+# Logging — simple production logging to console (adapt to file/Sentry as needed)
+LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO').upper()
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'}
+    },
+    'handlers': {
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'standard'}
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': LOG_LEVEL,
+    },
+    'loggers': {
+        'django.db.backends': {'level': 'ERROR', 'handlers': ['console'], 'propagate': False},
+    }
+}
