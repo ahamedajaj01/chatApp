@@ -20,15 +20,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         """ Handle websocket connection """
         self.conversation_id = self.scope['url_route']['kwargs'].get('conversation_id')
-        try:
-            self.conversation_id = int(self.conversation_id)
-        except (TypeError, ValueError):
-            await self.close(code=4000)
-            return
-
         if not self.conversation_id:
             await self.close(code=4000)
             return
+        
+        # Determine if conversation_id is an int (ID) or string (slug)
+        self.is_id = False
+        try:
+            self.conversation_id = int(self.conversation_id)
+            self.is_id = True
+        except (ValueError, TypeError):
+            self.is_id = False
+
         self.group_name=f'chat_{self.conversation_id}'
         self.user = self.scope['user']
       
@@ -207,18 +210,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
         - any slug for private conversations -> returns Conversation after permission check
         Raises PermissionDenied if user should not join.
         """   
-        # Try to find  conversation by slug
+        # Try to find conversation by ID or slug
         try:
-            convo = Conversation.objects.get(id=conversation_id)
+            if isinstance(conversation_id, int):
+                convo = Conversation.objects.get(id=conversation_id)
+            else:
+                convo = Conversation.objects.get(slug=conversation_id)
         except Conversation.DoesNotExist:
+            # If not found by slug, maybe it's a private chat slug pattern that needs creation or specific handling?
+            # For now, assuming it must exist.
             raise PermissionDenied("Conversation does not exist")
      
         # must be private -> verify membership
-        if  convo.type == Conversation.TYPE_PRIVATE:
+        if convo.type == Conversation.TYPE_PRIVATE:
             if not ConversationParticipant.objects.filter(conversation=convo, user=user).exists():
                 raise PermissionDenied("Not a participant")
             return convo
         
+        # If it's global, anyone can join (assuming global type logic if needed, though code above handles TYPE_PRIVATE check)
+        if convo.type == Conversation.TYPE_GLOBAL:
+             return convo
+
         # fallback deny
         raise PermissionDenied("Cannot join room")
     
