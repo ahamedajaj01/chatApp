@@ -6,6 +6,7 @@ class WebSocketService {
     this.callbacks = {};
     this.reconnectInterval = 3000;
     this.shouldReconnect = true;
+    this.reconnectTimer = null;
 
     this.token = null;
     this.currentRoom = null;
@@ -16,13 +17,13 @@ class WebSocketService {
     this.shouldReconnect = true;
 
     // ✅ GUARD: already connected to same room
-     if (
-    this.socket &&
-    this.socket.readyState === WebSocket.OPEN &&
-    this.currentRoom === roomName
-  ) {
-    return;
-  }
+    if (
+      this.socket &&
+      this.socket.readyState === WebSocket.OPEN &&
+      this.currentRoom === roomName
+    ) {
+      return;
+    }
 
     this.token = token;
     this.currentRoom = roomName;
@@ -32,8 +33,8 @@ class WebSocketService {
     }
 
     let baseUrl = config.wsUrl;
-  const urlObj = new URL(baseUrl)
-  const wsProtocol = urlObj.protocol === "https:"?"wss:":"ws:";
+    const urlObj = new URL(baseUrl);
+    const wsProtocol = urlObj.protocol === "https:" ? "wss:" : "ws:";
 
     const wsUrl = `${wsProtocol}//${urlObj.host}/ws/chat/${roomName}/?token=${token}`;
     this.socket = new WebSocket(wsUrl);
@@ -49,7 +50,10 @@ class WebSocketService {
     this.socket.onclose = (event) => {
       this.trigger("close");
       if (this.shouldReconnect && event.code !== 1000) {
-        setTimeout(() => {
+        if (this.reconnectTimer) return;
+
+        this.reconnectTimer = setTimeout(() => {
+          this.reconnectTimer = null;
           if (this.token && this.currentRoom) {
             this.connect(this.token, this.currentRoom);
           }
@@ -57,11 +61,23 @@ class WebSocketService {
       }
     };
 
-    this.socket.onerror = (error) => this.trigger("error", error);
+    this.socket.onerror = (error) => {
+      this.trigger("error", error);
+      // force close so onclose + reconnect can run
+      if (this.socket) {
+        this.socket.close();
+      }
+    };
   }
 
-  disconnect() {
-    this.shouldReconnect = false;
+  disconnect({ permanent = false } = {}) {
+    if (permanent) {
+      this.shouldReconnect = false;
+    }
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
     if (this.socket) {
       this.socket.close();
       this.socket = null;
@@ -81,7 +97,9 @@ class WebSocketService {
 
   off(event, callback) {
     if (!this.callbacks[event]) return;
-    this.callbacks[event] = this.callbacks[event].filter((cb) => cb !== callback);
+    this.callbacks[event] = this.callbacks[event].filter(
+      (cb) => cb !== callback
+    );
   }
 
   trigger(event, data) {

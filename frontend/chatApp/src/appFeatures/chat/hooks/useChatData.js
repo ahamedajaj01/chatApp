@@ -37,7 +37,9 @@ export default function useChatData({ routeConversationId, navigate }) {
   }, [activeConversation, dispatch]);
 
   const activeMessages =
-    messagesMap[String(activeConversation)] || messagesMap[activeConversation] || [];
+    messagesMap[String(activeConversation)] ||
+    messagesMap[activeConversation] ||
+    [];
 
   useEffect(() => {
     if (!scrollRef.current) return;
@@ -50,7 +52,9 @@ export default function useChatData({ routeConversationId, navigate }) {
 
   async function handleStartConversation(userObj) {
     try {
-      const result = await dispatch(startConversation({ username: userObj.username })).unwrap();
+      const result = await dispatch(
+        startConversation({ username: userObj.username })
+      ).unwrap();
       const convId = result?.id || result?.conversation?.id;
       if (convId) {
         setActiveConversation(convId);
@@ -75,7 +79,9 @@ export default function useChatData({ routeConversationId, navigate }) {
       return;
     }
     try {
-      const res = await dispatch(sendMessages({ conversationId: activeConversation, text })).unwrap();
+      const res = await dispatch(
+        sendMessages({ conversationId: activeConversation, text })
+      ).unwrap();
       if (scrollRef.current) {
         requestAnimationFrame(() => {
           const el = scrollRef.current;
@@ -135,21 +141,19 @@ export default function useChatData({ routeConversationId, navigate }) {
 
   // WebSocket Connection Logic
 
-
   const accessToken = useSelector((s) => s.auth.accessToken);
-
+  const roomSlug = currentConv?.slug;
+  
   useEffect(() => {
-    if (activeConversation && currentConv?.slug && accessToken) {
-      webSocketService.connect(accessToken, currentConv.slug);
-    }
-    // Optional: disconnect when leaving? 
-    // webSocketService.disconnect() might be too aggressive if we want to keep it open for a bit.
-    // But since we only support one room, we should probably disconnect if activeConversation becomes null.
-    else if (!activeConversation) {
-      webSocketService.disconnect(); 
-    }
-  }, [activeConversation, currentConv, accessToken]);
+    if (!accessToken || !roomSlug) return;
 
+    webSocketService.connect(accessToken, roomSlug);
+
+    return () => {
+      // normal cleanup, allows reconnect later
+      webSocketService.disconnect();
+    };
+  }, [accessToken, roomSlug]);
 
   return {
     conversations,
