@@ -16,13 +16,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     URL: ws://localhost:8000/ws/chat/<conversation_id>/
     """
+
     async def connect(self):
         """ Handle websocket connection """
-        self.room_name = self.scope['url_route']['kwargs'].get('room_name')
-        if not self.room_name:
+        self.conversation_id = self.scope['url_route']['kwargs'].get('conversation_id')
+        try:
+            self.conversation_id = int(self.conversation_id)
+        except (TypeError, ValueError):
             await self.close(code=4000)
             return
-        self.group_name=f'chat_{self.room_name}'
+
+        if not self.conversation_id:
+            await self.close(code=4000)
+            return
+        self.group_name=f'chat_{self.conversation_id}'
         self.user = self.scope['user']
       
 
@@ -34,7 +41,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Verify user is participant in this conversation
       # Resolve room_name -> Conversation and check permissions (handles 'global' too)
         try:
-            self.conversation = await self.get_conversation_for_room(self.room_name, self.user)
+            self.conversation = await self.get_conversation_for_user(self.conversation_id, self.user)
         except PermissionDenied:
             await self.close(code=4003)
             return
@@ -192,7 +199,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     
     # Database operations wrapped with database_sync_to_async
     @database_sync_to_async
-    def get_conversation_for_room(self, room_name, user):
+    def get_conversation_for_user(self,conversation_id, user):
         """
         Map room_name (slug) -> Conversation object.
         Accepts:
@@ -202,23 +209,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         """   
         # Try to find  conversation by slug
         try:
-            convo = Conversation.objects.get(slug=room_name)
+            convo = Conversation.objects.get(id=conversation_id)
         except Conversation.DoesNotExist:
-            # If asked for global, create if not exist
-            if room_name == Conversation.TYPE_GLOBAL or room_name == "global":
-                convo, _ = Conversation.objects.get_or_create(
-                    slug=Conversation.TYPE_GLOBAL,
-                    defaults={'type': Conversation.TYPE_GLOBAL}
-                )
-            else:
-                # Unknown slug
-                raise PermissionDenied("Conversation does not exist")
-            
-        # If this is a global conversation, anyone authenticated may join
-        if convo.type == Conversation.TYPE_GLOBAL:
-            return convo
-        
-        # Otherwise must be private -> verify membership
+            raise PermissionDenied("Conversation does not exist")
+     
+        # must be private -> verify membership
         if  convo.type == Conversation.TYPE_PRIVATE:
             if not ConversationParticipant.objects.filter(conversation=convo, user=user).exists():
                 raise PermissionDenied("Not a participant")
@@ -256,4 +251,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
             logger.exception("Error saving message")
             return None
 
-        
+    @database_sync_to_async
+    def delete_message(self, message_id):
+        """
+        Delete a message for the current user (sender-only delete).
+        """
+        try:
+            message = Message.objects.get(
+                id=message_id,
+                sender=self.user,
+                conversation=self.conversation
+            )
+            message.delete()
+            return True
+        except Message.DoesNotExist:
+            return False
+
