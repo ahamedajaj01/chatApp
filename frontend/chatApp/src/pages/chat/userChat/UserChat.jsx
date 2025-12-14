@@ -1,0 +1,114 @@
+import React, { useState, useRef, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { SettingsModal } from "../../../components"
+import { ChatLayout, ConversationHeader, MessageInput, ProfileModal } from "../../../components";
+
+
+import useChatData from "../../../appFeatures/chat/hooks/useChatData";
+import useChatSearch from "../../../appFeatures/chat/hooks/useChatSearch";
+import Sidebar from "./parts/Sidebar";
+import ChatPane from "./parts/ChatPane";
+import EmptyState from "./parts/EmptyState";
+
+export default function UserChat() {
+  const navigate = useNavigate();
+  const { conversationId: routeConversationId } = useParams();
+
+  // Avatar- user profile
+  const [profileOpen, setProfileOpen] = useState(false);
+
+
+  const {
+    conversations,
+    user,
+    chatStatus,
+    activeConversation,
+    setActiveConversation,
+    headerTitleOverride,
+    headerTitle,
+    setHeaderTitleOverride,
+    handleStartConversation,
+    handleSendMessage,
+    activeMessages,
+    scrollRef,
+  } = useChatData({ routeConversationId, navigate });
+
+  const { searchQuery, setSearchQuery, searchResults, searchStatus, searchError } =
+    useChatSearch();
+
+  const [showSetting, setShowSetting] = useState(false);
+
+  function handleSelectConversation(id) {
+    setActiveConversation(id);
+    setHeaderTitleOverride(null);
+    navigate(`/chats/${String(id)}`, { replace: false });
+  }
+
+  return (
+    <>
+      <ChatLayout
+        sidebar={
+          <Sidebar
+            conversations={conversations}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            searchResults={searchResults}
+            searchStatus={searchStatus}
+            searchError={searchError}
+            onSelectConversation={handleSelectConversation}
+            currentUserId={user.username ?? user.id}
+            onStartConversation={handleStartConversation}
+            onOpenSettings={() => setShowSetting(true)}
+          />
+        }
+        header={
+          activeConversation ? (
+            <ConversationHeader
+              title={headerTitle}
+              onAvatarClick={() => setProfileOpen(true)}
+            />
+          ) : (
+            <>
+              <div style={{ padding: 16, borderBottom: "1px solid var(--bs-border-color)" }}>
+                <strong>Your Chats</strong>
+
+              </div>
+            </>
+          )
+        }
+        messages={
+          activeConversation ? (
+            <ChatPane scrollRef={scrollRef} messages={activeMessages} currentUserId={user.username ?? user.id} conversationId={activeConversation} />
+          ) : (
+            <EmptyState />
+          )
+        }
+        input={
+          activeConversation ? (
+            <MessageInput
+              key={activeConversation ?? "no-conv"}
+              onSend={handleSendMessage}
+              disabled={chatStatus === "loading"}
+            />
+          ) : null
+        }
+      />
+
+      {/* Profile modal */}
+      <ProfileModal
+        show={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        conversation={activeConversation}
+        user={user}
+        displayName={headerTitle}
+      />
+
+      <SettingsModal
+        show={showSetting}
+        onClose={() => setShowSetting(false)}
+        onSave={() => setShowSetting(false)}
+        user={user}
+      />
+    </>
+  );
+}
