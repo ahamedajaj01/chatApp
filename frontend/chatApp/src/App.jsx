@@ -7,7 +7,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import { LoginPage, Home, SignupPage, UserChat } from "./pages";
 import { setDarkMode } from "./appFeatures/themeSlice";
 import webSocketService from "./api/websocketService";
-import { addMessage, fetchMessages } from "./appFeatures/chat/chatSlice";
+import { addMessage, fetchMessages, fetchConversations } from "./appFeatures/chat/chatSlice";
 
 function App() {
   const dispatch = useDispatch();
@@ -34,16 +34,16 @@ function App() {
   const token = useSelector((state) => state.auth.accessToken);
 
   useEffect(() => {
-    const handleMessage = (data) => {
-      console.log("DEBUG: App.jsx received message:", data);
-      if (data.type === "conversation_updated") {
-        dispatch(fetchMessages(data.conversation_id));
-      }
-      // Keep this if you still support direct message payloads (optional)
-      else if (data.type === "new_message") {
-        dispatch(addMessage(data.message));
-      }
-    };
+   const handleMessage = (data) => {
+  console.log("DEBUG: App.jsx received message:", data);
+  if (data.type === "conversation_updated") {
+    dispatch(fetchMessages(data.conversation_id));
+    dispatch(fetchConversations());  // ✅ Also refresh conversation list
+  }
+  else if (data.type === "new_message") {
+    dispatch(addMessage(data.message));
+  }
+};
 
     webSocketService.on("message", handleMessage);
 

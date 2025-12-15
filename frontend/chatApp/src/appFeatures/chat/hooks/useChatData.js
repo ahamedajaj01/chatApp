@@ -155,18 +155,7 @@ export default function useChatData({ routeConversationId, navigate }) {
     };
   }, [accessToken, convId]);
 
-  useEffect(() => {
-      const handleWsMessage = (data) => {
-        if (data.type === "conversation_updated") {
-          dispatch(fetchMessages(data.conversation_id));
-          dispatch(fetchConversations());
-      }
-  }
-      webSocketService.on("message", handleWsMessage);
-      return () => {
-        webSocketService.off("message", handleWsMessage);
-      }
-}, [dispatch]);
+ 
 
   return {
     conversations,
