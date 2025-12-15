@@ -1,4 +1,4 @@
-import React from "react";
+import './style/chatLayout.css';
 
 /**
  * ChatLayout: dumb, presentational container.
@@ -7,18 +7,13 @@ import React from "react";
  * - messages: message area
  * - input: message input area
  */
-export default function ChatLayout({ sidebar, header, messages, input }) {
+export default function ChatLayout({ sidebar, header, messages, input, isChatOpen }) {
   return (
-      <div style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+    <div className={`chat-layout ${isChatOpen ? 'chat-open' : ''}`} >
       {/* Left sidebar */}
       <div
+        className="chat-sidebar"
         style={{
-          width: 300,
-          minWidth: "300px",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-
           // Bootstrap theme-aware border + background
           borderRight: "1px solid var(--bs-border-color)",
           background: "var(--bs-body-bg)",
@@ -29,12 +24,7 @@ export default function ChatLayout({ sidebar, header, messages, input }) {
 
       {/* Right area */}
       <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          minWidth: 0,
-        }}
+        className="chat-main"
       >
         {/* Header */}
         <div

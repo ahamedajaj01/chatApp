@@ -157,10 +157,12 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # for local dev
+
 CORS_ALLOWED_ORIGINS = [
         "http://localhost:3000",  # Example for a React frontend
         "http://localhost:5173",  # Example for a React frontend
         "http://127.0.0.1:8000", # Example for local development
+        "http://192.168.1.88:5173", # Example for local development
         "https://your-frontend-domain.com", # Example for production
     ]
 

@@ -9,6 +9,7 @@ import { setDarkMode } from "./appFeatures/themeSlice";
 import webSocketService from "./api/websocketService";
 import { addMessage, fetchMessages, fetchConversations } from "./appFeatures/chat/chatSlice";
 
+
 function App() {
   const dispatch = useDispatch();
   // Load saved theme on startup

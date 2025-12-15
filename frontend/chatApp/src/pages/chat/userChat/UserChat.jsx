@@ -17,6 +17,9 @@ export default function UserChat() {
   // Avatar- user profile
   const [profileOpen, setProfileOpen] = useState(false);
 
+  // For mobile responsive
+  // const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
+
 
   const {
     conversations,
@@ -44,9 +47,13 @@ export default function UserChat() {
     navigate(`/chats/${String(id)}`, { replace: false });
   }
 
+  // mobile view
+  const isMobileChatOpen = Boolean(activeConversation);
+
   return (
     <>
       <ChatLayout
+        isChatOpen={isMobileChatOpen} // for mobile chat layout
         sidebar={
           <Sidebar
             conversations={conversations}
@@ -63,10 +70,24 @@ export default function UserChat() {
         }
         header={
           activeConversation ? (
-            <ConversationHeader
-              title={headerTitle}
-              onAvatarClick={() => setProfileOpen(true)}
-            />
+            // For mobile view css
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <button
+                className="btn btn-link d-md-none"
+                onClick={() => {
+                  setActiveConversation(null);  //Mobile view
+                  navigate('/chats');
+                }}
+                style={{ marginRight: 8, padding: '8px 12px' }}
+              >
+                <i className="bi bi-arrow-left" style={{ fontSize: 20 }}></i>
+              </button>
+
+              <ConversationHeader
+                title={headerTitle}
+                onAvatarClick={() => setProfileOpen(true)}
+              />
+            </div>
           ) : (
             <>
               <div style={{ padding: 16, borderBottom: "1px solid var(--bs-border-color)" }}>

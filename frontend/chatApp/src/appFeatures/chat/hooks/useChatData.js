@@ -145,8 +145,6 @@ export default function useChatData({ routeConversationId, navigate }) {
   const convId = currentConv?.id;
 
   useEffect(() => {
-    console.log("DEBUG: Access token:", accessToken ? "exists" : "missing");
-  console.log("DEBUG: Token length:", accessToken?.length);
     if (!accessToken || !convId) return;
 
     webSocketService.connect(accessToken, convId);
