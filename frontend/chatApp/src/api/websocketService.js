@@ -32,9 +32,10 @@ class WebSocketService {
       this.disconnect();
     }
 
- 
+
 
     const wsUrl = `${config.wsUrl}/ws/chat/${conversationId}/?token=${token}`;
+    console.log("DEBUG: Attempting WebSocket connection to:", wsUrl);
     this.socket = new WebSocket(wsUrl);
 
     this.socket.onopen = () => this.trigger("open");
@@ -42,7 +43,7 @@ class WebSocketService {
       try {
         const data = JSON.parse(event.data);
         this.trigger("message", data);
-      } catch (e) {}
+      } catch (e) { }
     };
 
     this.socket.onclose = (event) => {
