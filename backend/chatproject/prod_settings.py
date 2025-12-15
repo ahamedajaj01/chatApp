@@ -189,7 +189,7 @@ CORS_ALLOWED_ORIGINS= os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(
-        minutes=int(os.getenv("ACCESS_TOKEN_LIFETIME", 5))
+        minutes=int(os.getenv("ACCESS_TOKEN_LIFETIME", 60))
     ),
     'REFRESH_TOKEN_LIFETIME': timedelta(
         days=int(os.getenv("REFRESH_TOKEN_LIFETIME", 7))

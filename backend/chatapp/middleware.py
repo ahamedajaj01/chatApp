@@ -33,6 +33,12 @@ class JWTAuthMiddleware:
         try:
             access_token = AccessToken(token)
             user_id = access_token["user_id"]
-            return User.objects.get(id=user_id)
-        except (TokenError, User.DoesNotExist):
+            user = User.objects.get(id=user_id)
+            print(f"DEBUG: Token validated successfully for user: {user}")  # ✅ Add this
+            return user
+        except TokenError as e:
+            print(f"DEBUG: Token validation failed: {e}")  # ✅ Add this
+            return AnonymousUser()
+        except User.DoesNotExist:
+            print(f"DEBUG: User not found for token")  # ✅ Add this
             return AnonymousUser()
