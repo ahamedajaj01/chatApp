@@ -35,6 +35,7 @@ function App() {
 
   useEffect(() => {
     const handleMessage = (data) => {
+      console.log("DEBUG: App.jsx received message:", data);
       if (data.type === "new_message") {
         dispatch(addMessage(data.message));
       }
