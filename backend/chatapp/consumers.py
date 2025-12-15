@@ -33,7 +33,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except (ValueError, TypeError):
             self.is_id = False
 
-        self.group_name=f'chat_{self.conversation_id}'
+        except (ValueError, TypeError):
+            self.is_id = False
+
         self.user = self.scope['user']
       
 
@@ -56,12 +58,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close(code=4000)
             return
         
-        #join room group
+        # Join room group
+        self.group_name = f"chat_{self.conversation_id}"
         await self.channel_layer.group_add(
             self.group_name,
             self.channel_name
         )
+        
         await self.accept()
+        print(f"DEBUG: Connection ACCEPTED for user {self.user} in conversation {self.conversation_id}")
+        print(f"DEBUG: Joined group {self.group_name}")
 
         # Send connection confirmation
         await self.send(text_data=json.dumps({
