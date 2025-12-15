@@ -21,6 +21,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         """ Handle websocket connection """
         self.conversation_id = self.scope['url_route']['kwargs'].get('conversation_id')
         if not self.conversation_id:
+            print("DEBUG: Connection rejected - No conversation_id")
             await self.close(code=4000)
             return
         
@@ -38,6 +39,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
          # Reject anonymous users
         if self.user.is_anonymous:
+            print(f"DEBUG: Connection rejected - Anonymous user. Scope user: {self.user}")
             await self.close(code=4001)
             return
         
@@ -45,10 +47,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
       # Resolve room_name -> Conversation and check permissions (handles 'global' too)
         try:
             self.conversation = await self.get_conversation_for_user(self.conversation_id, self.user)
-        except PermissionDenied:
+        except PermissionDenied as e:
+            print(f"DEBUG: Connection rejected - PermissionDenied: {e}")
             await self.close(code=4003)
             return
-        except Exception:
+        except Exception as e:
+            print(f"DEBUG: Connection rejected - Unexpected error: {e}")
             await self.close(code=4000)
             return
         
