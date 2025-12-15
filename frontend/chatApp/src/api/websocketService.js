@@ -41,7 +41,7 @@ class WebSocketService {
       wsUrl = wsUrl.replace('ws://', 'wss://');
     }
 
-    console.log("DEBUG: Final WebSocket URL:", wsUrl);
+    console.log("DEBUG: Final WebSocket URL (v2):", wsUrl);
     this.socket = new WebSocket(wsUrl);
 
     this.socket.onopen = () => this.trigger("open");
