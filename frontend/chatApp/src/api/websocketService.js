@@ -32,11 +32,9 @@ class WebSocketService {
       this.disconnect();
     }
 
-    let baseUrl = config.wsUrl;
-    const urlObj = new URL(baseUrl);
-    const wsProtocol = urlObj.protocol === "https:" ? "wss:" : "ws:";
+ 
 
-    const wsUrl = `${wsProtocol}//${urlObj.host}/ws/chat/${conversationId}/?token=${token}`;
+    const wsUrl = `${config.wsUrl}/ws/chat/${conversationId}/?token=${token}`;
     this.socket = new WebSocket(wsUrl);
 
     this.socket.onopen = () => this.trigger("open");
