@@ -37,8 +37,9 @@ function App() {
     const handleMessage = (data) => {
       console.log("DEBUG: App.jsx received message:", data);
       if (data.type === "conversation_updated") {
-        dispatch(fetchMessages(data.conversationId));
+        dispatch(fetchMessages(data.conversation_id));
       }
+      // Keep this if you still support direct message payloads (optional)
       else if (data.type === "new_message") {
         dispatch(addMessage(data.message));
       }
