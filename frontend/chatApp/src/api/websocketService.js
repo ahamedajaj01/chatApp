@@ -34,8 +34,14 @@ class WebSocketService {
 
 
 
-    const wsUrl = `${config.wsUrl}/ws/chat/${conversationId}/?token=${token}`;
-    console.log("DEBUG: Attempting WebSocket connection to:", wsUrl);
+    let wsUrl = `${config.wsUrl}/ws/chat/${conversationId}/?token=${token}`;
+
+    // Auto-upgrade to WSS if on HTTPS
+    if (window.location.protocol === 'https:' && wsUrl.startsWith('ws://')) {
+      wsUrl = wsUrl.replace('ws://', 'wss://');
+    }
+
+    console.log("DEBUG: Final WebSocket URL:", wsUrl);
     this.socket = new WebSocket(wsUrl);
 
     this.socket.onopen = () => this.trigger("open");
