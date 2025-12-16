@@ -1,24 +1,9 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // If you're using React Router for navigation
-import {Button} from "../index"
-import { useSelector, useDispatch } from 'react-redux';
-import { logout as logoutSession } from '../../appFeatures/auth/authSlice';
+import { Link } from 'react-router-dom'; // If you're using React Router for navigation
+import { useSelector } from 'react-redux';
 
 const Navbar = () => {
-   const navigate = useNavigate();
-    const dispatch = useDispatch()
   const {user} = useSelector((s) => s.auth);
 
-
-    const handleLogout = async ()=>{
-    try {
-      await dispatch(logoutSession());
-      navigate("/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
-  
-    }
-  };
   return (
     <>
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -71,11 +56,7 @@ const Navbar = () => {
                   <span className="nav-link">Welcome, {user?.username}</span> {/* Display username */}
                 </li>
 
-                <li className="nav-item">
-                <Button onClick={handleLogout} className="nav-link">
-                  Logout
-                </Button>
-              </li>
+               
               </>
              )}
           

@@ -1,14 +1,12 @@
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Navbar, Footer } from "./components/index";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import PublicRoute from "./components/PublicRoute";
 import PrivateRoute from "./components/PrivateRoute";
 import { LoginPage, Home, SignupPage, UserChat } from "./pages";
 import { setDarkMode } from "./appFeatures/themeSlice";
 import useChatListSocket from "./appFeatures/chat/hooks/useChatListSocket";
-import webSocketService from "./api/websocketService";
-// import { addMessage, fetchMessages, fetchConversations } from "./appFeatures/chat/chatSlice";
 
 
 function App() {
@@ -34,30 +32,15 @@ function App() {
     }
   }, [darkMode]);
 
-  const token = useSelector((state) => state.auth.accessToken);
+  // const token = useSelector((state) => state.auth.accessToken);
 
-
-//   useEffect(() => {
-//    const handleMessage = (data) => {
-//   if (data.type === "conversation_updated") {
-//     dispatch(fetchMessages(data.conversation_id));
-//     dispatch(fetchConversations());  // ✅ Also refresh conversation list
-//   }
-//   else if (data.type === "new_message") {
-//     dispatch(addMessage(data.message));
-//   }
-// };
-
-//     webSocketService.on("message", handleMessage);
-
-//     return () => {
-//       webSocketService.off("message", handleMessage);
-//     };
-//   }, [dispatch]);
+  // location to track route changes
+const location = useLocation();
+const isChatRoute = location.pathname.startsWith('/chats');
 
   return (
     <>
-      <Navbar />
+      {!isChatRoute && <Navbar />}
 
       <Routes>
         {/* Public routes (only for non-authenticated users) */}
@@ -76,7 +59,7 @@ function App() {
         <Route path="*" element={<Home />} />
       </Routes>
 
-      <Footer />
+      {!isChatRoute && <Footer />}
     </>
   );
 }
