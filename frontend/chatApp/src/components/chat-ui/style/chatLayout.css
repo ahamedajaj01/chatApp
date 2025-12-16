@@ -33,7 +33,7 @@ display: flex;
   .chat-main {
     width: 100% !important;
     min-width: 100% !important;
-    height: 100vh;
+    height: 100%;
   }
 
   .chat-sidebar {

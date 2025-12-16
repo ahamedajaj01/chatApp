@@ -13,7 +13,9 @@ function MessageInput({ onSend, disabled = false }) {
   };
   return (
     <>
- <form onSubmit={handleSend} className="d-flex align-items-end p-2 border-top" role="search">
+ <form onSubmit={handleSend} className="d-flex align-items-end p-2 border-top"
+  style={{ paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom))" }}
+ role="search">
   {/* textarea grows and takes remaining width */}
   <textarea
     className="form-control rounded-pill flex-grow-1 me-2"
