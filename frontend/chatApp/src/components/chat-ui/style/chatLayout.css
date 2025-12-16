@@ -23,8 +23,11 @@
 /* Mobile layout - WhatsApp style */
 @media (max-width: 768px) {
   .chat-layout {
-    display: block;
-  }
+display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+    }
 
   .chat-sidebar,
   .chat-main {

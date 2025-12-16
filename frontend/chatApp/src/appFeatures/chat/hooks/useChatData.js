@@ -6,6 +6,7 @@ import {
   fetchMessages,
   sendMessages,
   startConversation,
+  addMessage,
 } from "../chatSlice";
 import webSocketService from "../../../api/websocketService";
 
@@ -29,13 +30,24 @@ export default function useChatData({ routeConversationId, navigate }) {
     if (routeConversationId) setActiveConversation(routeConversationId);
   }, [routeConversationId]);
 
+  // Load messages when active conversation changes
   useEffect(() => {
-    if (activeConversation !== null) {
-      dispatch(fetchMessages(activeConversation));
-      dispatch(fetchMarkRead(activeConversation));
-    }
+    if (!activeConversation) return;
+    (async () => {
+      // load messages
+      await dispatch(fetchMessages(activeConversation));
+      // mark read
+      await dispatch(fetchMarkRead(activeConversation));
+      // re sync active conversation so unread counts update
+      dispatch(fetchConversations());
+    })();
+    // if (activeConversation !== null) {
+    //   dispatch(fetchMessages(activeConversation));
+    //   dispatch(fetchMarkRead(activeConversation));
+    // }
   }, [activeConversation, dispatch]);
 
+  // Auto-scroll on new messages
   const activeMessages =
     messagesMap[String(activeConversation)] ||
     messagesMap[activeConversation] ||
@@ -149,13 +161,41 @@ export default function useChatData({ routeConversationId, navigate }) {
 
     webSocketService.connect(accessToken, convId);
 
+    // Handle incoming messages
+    const handleMessage = (data) => {
+      if (data.type === "conversation_updated") {
+        // ✅ REST is still the truth
+        dispatch(fetchMessages(convId));
+        dispatch(fetchConversations()); // ✅ Also refresh conversation list
+      }
+      if (data.type === "new_message") {
+        dispatch(addMessage(data.message));
+      }
+    };
+    // Subscribe to messages
+    webSocketService.on("message", handleMessage);
+
     return () => {
+      webSocketService.off("message", handleMessage);
       // normal cleanup, allows reconnect later
       webSocketService.disconnect();
     };
-  }, [accessToken, convId]);
+  }, [accessToken, convId, dispatch]);
 
- 
+  // thread read receipt on incoming messages
+  useEffect(()=>{
+    const handleMessage = (data)=>{
+      if(!data?.type) return;
+
+      if(data.type === "conversation_updated" && String(data.conversation_id) === String(activeConversation)){
+        dispatch(fetchMarkRead(activeConversation))
+    }
+  }
+    webSocketService.on("message", handleMessage);
+    return ()=>{
+      webSocketService.off("message", handleMessage);
+    }
+}, [activeConversation, dispatch])
 
   return {
     conversations,

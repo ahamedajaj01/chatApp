@@ -31,19 +31,32 @@ class MessageSerializer(serializers.ModelSerializer):
 class ConversationListSerializer(serializers.ModelSerializer):
     last_message = serializers.SerializerMethodField()
     participants = serializers.SerializerMethodField()
+    unread_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Conversation
-        fields = ['id','slug','type','created_at','last_message','participants']
-
+        fields = ['id','slug','type','created_at','last_message','participants','unread_count']
+     
+    #  Method to get last message
     def get_last_message(self,obj):
         msg = obj.messages.order_by('-timestamp').first()
         if not msg:
             return None
         return MessageSerializer(msg).data
     
+    # Method to get participants usernames
     def get_participants(self,obj):
         return [p.user.username for p in obj.participants.select_related('user').all()]
+    
+    # Method to get unread count for requesting user
+    def get_unread_count(self,obj):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return 0
+        participant = obj.participants.filter(user=request.user).first()
+        if not participant:
+            return 0
+        return participant.unread_count
 
 class ConversationCreateSerializer(serializers.Serializer):
     username = serializers.CharField(write_only=True)

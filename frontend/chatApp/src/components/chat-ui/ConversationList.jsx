@@ -38,6 +38,11 @@
 
             return (
               <Button
+               style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  }}
                 key={c.id ?? `conv-${idx}`}
                 className={`list-group-item list-group-item-action ${
                   activeId === c.id ? "active" : ""
@@ -45,6 +50,21 @@
                 onClick={() => onSelect(c.id)}
               >
                 {displayName}
+                {c.unread_count > 0 && (
+  <span
+    style={{
+      marginLeft: "auto",
+      backgroundColor: "#0d6efd",
+      color: "#fff",
+      borderRadius: "12px",
+      padding: "2px 8px",
+      fontSize: "12px",
+      fontWeight: "bold",
+    }}
+  >
+    {c.unread_count}
+  </span>
+)}
               </Button>
             );
           })}

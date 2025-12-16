@@ -6,12 +6,14 @@ import PublicRoute from "./components/PublicRoute";
 import PrivateRoute from "./components/PrivateRoute";
 import { LoginPage, Home, SignupPage, UserChat } from "./pages";
 import { setDarkMode } from "./appFeatures/themeSlice";
+import useChatListSocket from "./appFeatures/chat/hooks/useChatListSocket";
 import webSocketService from "./api/websocketService";
-import { addMessage, fetchMessages, fetchConversations } from "./appFeatures/chat/chatSlice";
+// import { addMessage, fetchMessages, fetchConversations } from "./appFeatures/chat/chatSlice";
 
 
 function App() {
   const dispatch = useDispatch();
+  useChatListSocket() // Custom hook to manage chat list WebSocket connection
   // Load saved theme on startup
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -34,24 +36,24 @@ function App() {
 
   const token = useSelector((state) => state.auth.accessToken);
 
-  useEffect(() => {
-   const handleMessage = (data) => {
-  console.log("DEBUG: App.jsx received message:", data);
-  if (data.type === "conversation_updated") {
-    dispatch(fetchMessages(data.conversation_id));
-    dispatch(fetchConversations());  // ✅ Also refresh conversation list
-  }
-  else if (data.type === "new_message") {
-    dispatch(addMessage(data.message));
-  }
-};
 
-    webSocketService.on("message", handleMessage);
+//   useEffect(() => {
+//    const handleMessage = (data) => {
+//   if (data.type === "conversation_updated") {
+//     dispatch(fetchMessages(data.conversation_id));
+//     dispatch(fetchConversations());  // ✅ Also refresh conversation list
+//   }
+//   else if (data.type === "new_message") {
+//     dispatch(addMessage(data.message));
+//   }
+// };
 
-    return () => {
-      webSocketService.off("message", handleMessage);
-    };
-  }, [dispatch]);
+//     webSocketService.on("message", handleMessage);
+
+//     return () => {
+//       webSocketService.off("message", handleMessage);
+//     };
+//   }, [dispatch]);
 
   return (
     <>

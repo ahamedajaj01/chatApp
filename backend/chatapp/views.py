@@ -141,15 +141,27 @@ class ConversationMessageView(APIView):
             return Response(
                 {"detail": "Message too long"}, status=status.HTTP_400_BAD_REQUEST
             )
-
+        # Create message inside transaction(means do with unread count increment)
         with transaction.atomic():
             msg = Message.objects.create(
                 conversation=conv, sender=request.user, content=content
             )
+            # Update unread counts
+            channel_layer = get_channel_layer()
             # increment unread for other participants
             for p in conv.participants.exclude(user=request.user):
-                p.unread_count = p.unread_count + 1
-                p.save()
+                p.unread_count +=  1
+                p.save(update_fields=["unread_count"])
+                # Notify via WebSocket
+                async_to_sync(channel_layer.group_send)(
+                    f"user_{p.user.id}",
+                    {
+                        "type": "chat_list_update",
+                        "conversation_id": conv.id,
+                        "unread_count": p.unread_count,
+                    },
+                )
+                
             # Broadcast to WebSocket
             channel_layer = get_channel_layer()
             group_name = f"chat_{conv.id}"

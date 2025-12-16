@@ -144,7 +144,8 @@ const chatSlice = createSlice({
       const current = state.messages[id];
 
       // Helper to check for duplicates
-      const isDuplicate = (list) => list.some((m) => String(m.id) === String(message.id));
+      const isDuplicate = (list) =>
+        list.some((m) => String(m.id) === String(message.id));
 
       // Handle array structure
       if (Array.isArray(current)) {
@@ -161,6 +162,26 @@ const chatSlice = createSlice({
       // Fallback: replace with array if structure is unexpected
       else {
         state.messages[id] = [message];
+      }
+    },
+
+    // Chat list updates can be handled here as needed
+    chatListUpdated: (state, action) => {
+      const { conversation_id, unread_count } = action.payload;
+
+      const conv = state.conversations.find(
+        (c) => String(c.id) === String(conversation_id)
+      );
+
+      if (conv) {
+        conv.unread_count = unread_count;
+      } else {
+        // new conversation arrives via first message
+        state.conversations.unshift({
+          id: conversation_id,
+          unread_count,
+          last_message: null,
+        });
       }
     },
   },
@@ -341,10 +362,10 @@ const chatSlice = createSlice({
         delete state.messages[String(conversationId)];
       })
       .addCase(hideConversation.rejected, (state, action) => {
-        state.error = action.payload || action.error?.message
+        state.error = action.payload || action.error?.message;
       });
   },
 });
 
-export const { addMessage } = chatSlice.actions;
+export const { addMessage, chatListUpdated } = chatSlice.actions;
 export default chatSlice.reducer;

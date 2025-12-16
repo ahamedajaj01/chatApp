@@ -11,7 +11,7 @@ from django.core.exceptions import PermissionDenied
 
 User = get_user_model()
 
-
+# WebSocket consumer for chat application
 class ChatConsumer(AsyncWebsocketConsumer):
     """
     WebSocket consumer for real-time chat messaging.
@@ -48,6 +48,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close(code=4001)
             return
 
+        # Handle special case for 'list' (user-level socket)
+        if self.conversation_id == "list":
+            # user level socket (chat list updates)
+            self.group_name = f"user_{self.user.id}"
+            await self.channel_layer.group_add(self.group_name, self.channel_name)
+            await self.accept()
+            return
         # Verify user is participant in this conversation
         # Resolve room_name -> Conversation and check permissions (handles 'global' too)
         try:
@@ -67,6 +74,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.group_name = f"chat_{self.conversation_id}"
         await self.channel_layer.group_add(self.group_name, self.channel_name)
 
+        # ADD: per-user group for chat list updates
+        self.user_group = f"user_{self.user.id}"
+        await self.channel_layer.group_add(self.user_group, self.channel_name)
+
+
         await self.accept()
         print(
             f"DEBUG: Connection ACCEPTED for user {self.user} in conversation {self.conversation_id}"
@@ -85,6 +97,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # leave room group
         if hasattr(self, "group_name"):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
+        
+        # leave user group
+        if hasattr(self, "user_group"):
+            await self.channel_layer.group_discard(self.user_group, self.channel_name)
 
     async def receive(self, text_data):
         """
@@ -161,7 +177,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "type": "conversation_updated",
             "conversation_id": event["conversation_id"],
             }))
-        
+
+    # handle chat list update for this user
+    async def chat_list_update(self, event):
+        """Handle chat list update for this user"""
+        await self.send(text_data=json.dumps({
+            "type": "chat_list_update",
+            "conversation_id": event["conversation_id"],
+            "unread_count": event["unread_count"],
+        }))
+
+
 # Light weight handler for message deletion
     async def handle_delete_message(self, data):
         """Handle message deletion"""
