@@ -12,6 +12,9 @@ This README is written so that you can understand what is where and how things w
 
 ---
 
+LIVE DEMO
+https://chat-app-phi-ruddy-92.vercel.app
+
 ## Project Structure
 
 ```
