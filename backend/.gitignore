@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# database
+*.db
+db.sqlite3
+
 # Django
 *.log
 local_settings.py
