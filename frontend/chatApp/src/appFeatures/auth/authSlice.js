@@ -28,7 +28,11 @@ export const login = createAsyncThunk(
       return data;
     } catch (error) {
       // rejectWithValue is useful so your UI can read action.payload on error
-      return rejectWithValue(error?.toString?.() || String(error));
+      return rejectWithValue(
+        error?.detail ||
+          error?.message ||
+          "Login failed! Invalid username or password"
+      );
     }
   }
 );
@@ -45,7 +49,12 @@ export const signup = createAsyncThunk(
       const data = await authService.signup(payload);
       return data;
     } catch (error) {
-      return rejectWithValue(error?.toString?.() || String(error));
+      return rejectWithValue(
+        error?.response?.data?.detail ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Signup failed"
+      );
     }
   }
 );
@@ -201,9 +210,8 @@ const authSlice = createSlice({
       })
       .addCase(getCurrentUser.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.payload || action.error?.message
-      })
-
+        state.error = action.payload || action.error?.message;
+      });
 
     //  signup
     builder
@@ -216,7 +224,6 @@ const authSlice = createSlice({
         state.user = action.payload?.user || null;
         state.accessToken = null;
         state.refreshToken = null;
-
       })
       .addCase(signup.rejected, (state, action) => {
         state.status = "failed";

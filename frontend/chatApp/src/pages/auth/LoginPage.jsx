@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { login, getCurrentUser } from "../../appFeatures/auth/authSlice";
 import { saveTokens } from "../../api/tokenUtils";
+import Alert from "../../components/common-ui/Alert";
 
 export default function LoginPage() {
   const dispatch = useDispatch();
@@ -17,37 +18,60 @@ export default function LoginPage() {
   });
   const [formErrors, setFormErrors] = useState(null);
 
-  const handleChange = (e)=>{
-    const {name, value} = e.target;
-    setForm((f)=>({...f, [name]:value}))
-  }
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+  };
 
-  // This receives formData 
-  const handleSubmit= async () =>{
+  // This receives formData
+  const handleSubmit = async () => {
     const payload = {
-        username : form.username,   // map frontend name -> backend username
-  password: form.password,
-    }
-    setFormErrors(null)
+      username: form.username, // map frontend name -> backend username
+      password: form.password,
+    };
+    setFormErrors(null);
     try {
-        // Try logging in. Thunk should return { access, refresh, user? } on success
-        const result = await dispatch(login(payload)).unwrap()
+      // Try logging in. Thunk should return { access, refresh, user? } on success
+      const result = await dispatch(login(payload)).unwrap();
 
-        // backend returns user only on a separate endpoint, fetch it:
+      // backend returns user only on a separate endpoint, fetch it:
       await dispatch(getCurrentUser()).unwrap();
 
-saveTokens()
-         // Post-login: redirect to conversations / home
-        navigate("/");
+      saveTokens();
+      // Post-login: redirect to conversations page
+      navigate("/");
     } catch (error) {
-      setFormErrors(error);
-        
+      let message = "Login failed. Please try again.";
+      if (typeof error === "string") {
+        message = error;
+      } else if (error?.detail) {
+        message = error.detail;
+      } else if (error?.message) {
+        message = error.message;
+      }
+      setFormErrors(message);
     }
-  }
+  };
+
 
   return (
     <>
-      <LoginForm form={form} onChange={handleChange} onSubmit={handleSubmit} status={status} error={error} formErrors={formErrors} />
+      {/* Alert message */}
+      <Alert
+        type="error"
+        message={formErrors}
+        onClose={() => {
+          setFormErrors(null);
+        }}
+      />
+      <LoginForm
+        form={form}
+        onChange={handleChange}
+        onSubmit={handleSubmit}
+        status={status}
+        error={error}
+        formErrors={formErrors}
+      />
     </>
   );
 }

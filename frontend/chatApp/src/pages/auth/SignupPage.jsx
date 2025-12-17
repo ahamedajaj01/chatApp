@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { signup } from "../../appFeatures/auth/authSlice";
 import { clearTokens } from "../../api/tokenUtils";
+import Alert from "../../components/common-ui/Alert";
 
 export default function SignupPage() {
   const dispatch = useDispatch();
@@ -16,6 +17,7 @@ export default function SignupPage() {
     email: "",
     password: "",
   });
+  const [formError, setFormError] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,31 +27,48 @@ export default function SignupPage() {
   // All logic lives in the page:
   const handleSubmit = async (formData) => {
     const payload = {
-        username : formData.name,   // map frontend name -> backend username
-         email: formData.email,
-  password: formData.password,
-    }
-    console.log("Received form data:", formData);
+      username: formData.name, // map frontend name -> backend username
+      email: formData.email,
+      password: formData.password,
+    };
     try {
       // Call signup thunk. unwrap() throws on rejection so we can catch it here.
       const result = await dispatch(signup(payload)).unwrap();
-      console.log(result);
-      
+
       // If your slice persisted tokens on signup, remove them now:
       clearTokens(); // remove tokens from localstorage
-      dispatch({type: "auth/clearAuth"})  // reset redux auth state
+      dispatch({ type: "auth/clearAuth" }); // reset redux auth state
 
       // Then navigate to the login page
-navigate("/login")
+      navigate("/login");
     } catch (error) {
-         // signup failed — UI shows error from slice, you can also show toast here
+      // signup failed — UI shows error from slice, you can also show toast here
+      let message = "Signup failed. Please try again.";
+
+      if (typeof err === "string") message = error;
+      else if (error?.detail) message = error.detail;
+      else if (error?.message) message = error.message;
+
+      setFormError(message);
       console.error("Signup failed:", error);
     }
   };
 
   return (
     <>
-      <SignupForm form={formData} onChange={handleChange} onSubmit={handleSubmit} status={status} error={error} />
+    {/* Alert message */}
+    <Alert
+  type="error"
+  message={formError}
+  onClose={() => setFormError(null)}
+/>
+      <SignupForm
+        form={formData}
+        onChange={handleChange}
+        onSubmit={handleSubmit}
+        status={status}
+        error={error}
+      />
     </>
   );
 }

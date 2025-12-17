@@ -42,9 +42,7 @@ export default function LoginForm({
           className="form-control mb-3"
           required
         />
-        {formErrors?.password && <p className="text-danger fs-6 mb-2">{String(formErrors.password)}</p>}
-
-        {error && !formErrors && <div className="text-danger mb-2">{String(error)}</div>}
+    
 
         <div className="d-grid">
           <Button type="submit" disabled={status === "loading"} className="btn btn-primary">
