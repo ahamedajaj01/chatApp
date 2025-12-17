@@ -1,6 +1,10 @@
+"""WebSocket consumers for chat application.
+This file defines the ChatConsumer which handles real-time
+messaging over WebSockets using Django Channels. It manages
+connections, message receipt, broadcasting, and user presence.
+"""
 import json
 import logging
-
 logger = logging.getLogger(__name__)
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async

@@ -42,8 +42,7 @@ export class AuthService {
     }
   }
 
-  // Optional: if your backend exposes a "current user" endpoint (e.g. /users/me/)
-  // implement it here and use it in your app when needed.
+  // get current user.
   async getCurrentUser() {
     try {
       const resp = await apiClient.get("/users/me/");

@@ -187,6 +187,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # For production
 CORS_ALLOWED_ORIGINS= os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 
+# JWT Configuration
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(
         minutes=int(os.getenv("ACCESS_TOKEN_LIFETIME", 60))

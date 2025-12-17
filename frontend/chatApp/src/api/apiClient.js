@@ -1,11 +1,12 @@
 // This file creates a SINGLE axios instance.
 // All API services will use this client.
-//
-// Why?
-// - Centralized base URL
-// - Centralized token handling
-// - Centralized headers
-// - Easy backend switching
+// Benefits of using a centralized apiClient:
+// - Automatically attaches base URL
+// - Automatically attaches access token to requests
+// - Handles 401 responses and token refresh automatically
+// - Centralized error handling (can be added later)
+// - Easier to maintain and update API interaction logic
+// - Easy to switch backend URLs or add features like logging
 
 import axios from "axios";
 import config from "../config/config.js"; // contains base URL

@@ -166,7 +166,7 @@ CORS_ALLOWED_ORIGINS = [
         "https://your-frontend-domain.com", # Example for production
     ]
 
-
+# JWT Configuration 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(
         minutes=int(os.getenv("ACCESS_TOKEN_LIFETIME", 5))
