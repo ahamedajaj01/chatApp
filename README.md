@@ -171,12 +171,16 @@ These are **normal learning issues**, not failures.
 ---
 
 ## Future Improvements
+These features are intentionally listed to reflect backend progress and learning goals:
 
 - Better authentication flow
 - Better UI design
 - Error handling
 - Security improvements
-- Real-time chat (WebSockets)
+- User presence (online / offline)
+- Typing indicator shown in UI
+- Password change functionality
+- Global chat room
 
 ---
 
