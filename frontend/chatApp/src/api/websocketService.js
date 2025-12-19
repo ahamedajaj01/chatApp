@@ -2,6 +2,7 @@ import config from "../config/config";
 
 class WebSocketService {
   constructor() {
+    this.heartbeatTimer = null; // for online status
     this.socket = null;
     this.callbacks = {};
     this.reconnectInterval = 3000;
@@ -43,7 +44,11 @@ class WebSocketService {
 
     this.socket = new WebSocket(wsUrl);
 
-    this.socket.onopen = () => this.trigger("open");
+    this.socket.onopen = () => {
+      this.trigger("open")
+      // Start heartbeat
+      this.startHeartBeat();
+    };
     this.socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -74,10 +79,31 @@ class WebSocketService {
     };
   }
 
+// Heartbeat to keep connection alive
+  startHeartBeat() {
+    // saftey never create multiple intervals
+    this.stopHeartBeat();
+    this.heartbeatTimer = setInterval(() => {
+      if (this.socket?.readyState === WebSocket.OPEN) { 
+this.socket.send(JSON.stringify({ type: "ping" }));   }
+    }, 30000); // every 30 seconds
+  }
+ 
+  // Stop heartbeat
+  stopHeartBeat() {
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = null;
+    }
+  }
+  // ==========================
+
   disconnect({ permanent = false } = {}) {
     if (permanent) {
       this.shouldReconnect = false;
     }
+    this.stopHeartBeat(); // stop heartbeat
+    
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;

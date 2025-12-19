@@ -113,6 +113,19 @@ export const hideConversation = createAsyncThunk(
   }
 );
 
+// fetch online status of a user
+export const fetchChatUser = createAsyncThunk(
+  "chat/fetchChatUser",
+  async (userId, { rejectWithValue }) =>{
+    try {
+      return await chatService.getChatUser(userId);      
+    } catch (error) {
+      return rejectWithValue(normalizeError(error));
+      
+    }
+  }
+);
+
 const chatSlice = createSlice({
   name: "chat",
   initialState: {
@@ -123,6 +136,8 @@ const chatSlice = createSlice({
     messages: {},
     status: "idle",
     error: null,
+    activeUser: null, // for online status
+    loadingUser: false, // for online status
   },
   reducers: {
     addMessage: (state, action) => {
@@ -363,7 +378,22 @@ const chatSlice = createSlice({
       })
       .addCase(hideConversation.rejected, (state, action) => {
         state.error = action.payload || action.error?.message;
+      })
+
+      // fetch online status of a user
+      .addCase(fetchChatUser.pending, (state) => {
+        state.loadingUser = true;
+        state.error = null;
+      })
+      .addCase(fetchChatUser.fulfilled, (state, action) => {
+        state.loadingUser = false;
+        state.activeUser = action.payload; // store user data including online status
+      })
+      .addCase(fetchChatUser.rejected, (state, action) => {
+        state.loadingUser = false;
+        state.error = action.payload || action.error?.message;
       });
+
   },
 });
 

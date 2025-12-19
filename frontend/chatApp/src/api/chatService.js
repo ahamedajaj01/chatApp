@@ -54,6 +54,12 @@ class ChatService {
     );
     return res.data;
   }
+
+  // To show online status of users
+  async getChatUser(userId) {
+    const res = await apiClient.get(`/users/${userId}/`);
+    return res.data; // Returns user data including online status
+  }
 }
 
 const chatService = new ChatService();

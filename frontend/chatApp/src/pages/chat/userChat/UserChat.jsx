@@ -34,6 +34,7 @@ export default function UserChat() {
     handleSendMessage,
     activeMessages,
     scrollRef,
+    activeUser, // for online status
   } = useChatData({ routeConversationId, navigate });
 
   const { searchQuery, setSearchQuery, searchResults, searchStatus, searchError } =
@@ -63,7 +64,7 @@ export default function UserChat() {
             searchStatus={searchStatus}
             searchError={searchError}
             onSelectConversation={handleSelectConversation}
-            currentUserId={user.username ?? user.id}
+            currentUserId={ String(user.id)}
             onStartConversation={handleStartConversation}
             onOpenSettings={() => setShowSetting(true)}
           />
@@ -85,6 +86,7 @@ export default function UserChat() {
 
               <ConversationHeader
                 title={headerTitle}
+                isOnline={activeUser?.is_online}
                 onAvatarClick={() => setProfileOpen(true)}
               />
             </div>

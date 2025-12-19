@@ -1,7 +1,7 @@
 import { Button } from "../index";
 import React from "react";
 
-function ConversationHeader({ title, onAvatarClick}) {
+function ConversationHeader({ title, onAvatarClick, isOnline}) {
   const initial = title?.toString().trim().charAt(0)?.toUpperCase() || "?";
 
   return (
@@ -41,16 +41,30 @@ function ConversationHeader({ title, onAvatarClick}) {
       </Button>
 
       {/* Title */}
+      <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
       <div
         style={{
-          fontWeight: 600,
-          fontSize: "16px",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
+           fontWeight: 600,
+      fontSize: "16px",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
         }}
       >
         {title}
       </div>
+         {isOnline && (
+          <div
+            style={{
+              fontSize: "12px",
+              color: "#198754", // bootstrap green
+              marginTop:"2px"
+            }}
+          >
+            Online
+          </div>
+        )}
+    </div>
     </div>
   );
 }

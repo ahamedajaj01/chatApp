@@ -15,14 +15,14 @@
               if (p == null) return "";
               if (typeof p === "string") return String(p);
               if (p.id !== undefined) return String(p.id);
-              if (p.username) return String(p.username);
-              if (p.user && p.user.username) return String(p.user.username);
+              // if (p.username) return String(p.username);
+              // if (p.user && p.user.username) return String(p.user.username);
               return "";
             };
 
             const otherParticipant =
               c.participants &&
-              c.participants.find((p) => participantKey(p) !== String(currentUserId));
+              c.participants?.find((p) => participantKey(p) !== String(currentUserId));
 
             // try common places for a display name
             const otherName =

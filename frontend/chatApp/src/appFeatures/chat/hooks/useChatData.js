@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   fetchConversations,
@@ -7,6 +7,7 @@ import {
   sendMessages,
   startConversation,
   addMessage,
+  fetchChatUser, // for online status
 } from "../chatSlice";
 import webSocketService from "../../../api/websocketService";
 
@@ -16,6 +17,7 @@ export default function useChatData({ routeConversationId, navigate }) {
   const messagesMap = useSelector((s) => s.chat.messages) || {};
   const chatStatus = useSelector((s) => s.chat.status);
   const user = useSelector((s) => s.auth.user) || {};
+  const activeUser = useSelector((s) => s.chat.activeUser) || {}; // for online status
 
   const [activeConversation, setActiveConversation] = useState(null);
   const [headerTitleOverride, setHeaderTitleOverride] = useState(null);
@@ -41,10 +43,7 @@ export default function useChatData({ routeConversationId, navigate }) {
       // re sync active conversation so unread counts update
       dispatch(fetchConversations());
     })();
-    // if (activeConversation !== null) {
-    //   dispatch(fetchMessages(activeConversation));
-    //   dispatch(fetchMarkRead(activeConversation));
-    // }
+   
   }, [activeConversation, dispatch]);
 
   // Auto-scroll on new messages
@@ -144,6 +143,22 @@ export default function useChatData({ routeConversationId, navigate }) {
     (c) => String(c.id) === String(activeConversation)
   );
 
+  // =============== for online status ==============
+  useEffect(()=>{
+    if (!currentConv || !user?.id) return;
+    const otherUserId = getOtherUserId(currentConv, user.id)
+    if(!otherUserId) return;
+    dispatch(fetchChatUser(otherUserId));
+  }, [currentConv, user?.id, dispatch]);
+
+  
+  function getOtherUserId(conversation, currentUserId){
+    if(!conversation?.participants) return null;
+    const other = conversation.participants.find(p=> String(p.id) !== String(currentUserId));
+    return other?.id || null;
+  }
+  //============================================
+
   const currentUserKey = String(user?.username ?? user?.id ?? "");
   const headerTitle = getConversationTitle(
     currentConv,
@@ -211,5 +226,6 @@ export default function useChatData({ routeConversationId, navigate }) {
     handleSendMessage,
     activeMessages,
     scrollRef,
+    activeUser, // for online status
   };
 }
