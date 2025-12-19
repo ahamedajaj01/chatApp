@@ -12,31 +12,47 @@ function ConversationList({
         {conversations.map((c, idx) => {
           // helper to extract a comparable key from a participant entry
           const participantKey = (p) => {
-            if (!p) return "";
+            if (!p) return null;
             if (typeof p === "string") return String(p);
             if (p.id != null) return String(p.id);
             if (p._id != null) return String(p._id);
             if (p.user?.id != null) return String(p.user.id);
             if (p.user?._id != null) return String(p.user._id);
-            return "";
+            return null;
           };
 
-          const otherParticipant =
-            c.participants &&
-            c.participants?.find(
-              (p) => participantKey(p) !== String(currentUserId)
-            );
+          const otherParticipant = c.participants
+            ?.map((p) => ({ p, key: participantKey(p) }))
+            .find((x) => x.key && x.key !== String(currentUserId))?.p;
 
           // try common places for a display name
-          const otherName =
-            (typeof otherParticipant === "string" ? otherParticipant : null) ??
-            otherParticipant?.username ??
-            otherParticipant?.user?.username ??
-            otherParticipant?.name ??
-            otherParticipant?.full_name ??
-            otherParticipant?.email ??
-            null;
-          const displayName = c.name || otherName || `Conversation ${c.id}`;
+          // const otherName =
+          //   (typeof otherParticipant === "string" ? otherParticipant : null) ??
+          //   otherParticipant?.username ??
+          //   otherParticipant?.user?.username ??
+          //   otherParticipant?.name ??
+          //   otherParticipant?.full_name ??
+          //   otherParticipant?.email ??
+          //   null;
+          // const displayName = c.name || otherName || `Conversation ${c.id}`;
+          // ======================
+          let displayName;
+
+          if (c.name) {
+            displayName = c.name;
+          } else if (
+            otherParticipant &&
+            String(otherParticipant.id) !== String(currentUserId)
+          ) {
+            displayName =
+              otherParticipant.username ||
+              otherParticipant.name ||
+              otherParticipant.email;
+          } else {
+            displayName = "Loading…";
+          }
+
+          // ================
 
           return (
             <Button

@@ -64,7 +64,7 @@ export default function UserChat() {
             searchStatus={searchStatus}
             searchError={searchError}
             onSelectConversation={handleSelectConversation}
-            currentUserId={ String(user._id ?? user.id)}
+            currentUserId={ String(user.id)}
             onStartConversation={handleStartConversation}
             onOpenSettings={() => setShowSetting(true)}
           />
@@ -101,7 +101,7 @@ export default function UserChat() {
         }
         messages={
           activeConversation ? (
-            <ChatPane scrollRef={scrollRef} messages={activeMessages} currentUserId={user._id ?? user.id} conversationId={activeConversation} />
+            <ChatPane scrollRef={scrollRef} messages={activeMessages} currentUserId={user.id} conversationId={activeConversation} />
           ) : (
             <EmptyState />
           )
