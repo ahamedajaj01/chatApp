@@ -39,10 +39,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except (ValueError, TypeError):
             self.is_id = False
 
-        except (ValueError, TypeError):
-            self.is_id = False
-
         self.user = self.scope["user"]
+
 
         # Reject anonymous users
         if self.user.is_anonymous:
@@ -58,6 +56,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.group_name = f"user_{self.user.id}"
             await self.channel_layer.group_add(self.group_name, self.channel_name)
             await self.accept()
+            
+        #======================= added online indicator
+            try:
+                await self.presence_active(self.user.id)
+            except Exception as e:
+               print("PRESENCE ERROR:", e)
+
+        #================================
             return
         # Verify user is participant in this conversation
         # Resolve room_name -> Conversation and check permissions (handles 'global' too)
@@ -96,6 +102,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
         )
 
+         #======================= added online indicator
+        try:
+            await self.presence_active(self.user.id)
+        except Exception as e:
+               print("PRESENCE ERROR:", e)
+
+        #================================
+
+
     async def disconnect(self, close_code):
         """Handle WebSocket disconnection"""
         # leave room group
@@ -105,6 +120,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # leave user group
         if hasattr(self, "user_group"):
             await self.channel_layer.group_discard(self.user_group, self.channel_name)
+        
+          #======================= added online indicator
+        try:
+           if hasattr(self, "user") and self.user.is_authenticated:
+               await self.presence_deactive(self.user.id)         
+        except Exception:
+            pass 
+        #================================
 
     async def receive(self, text_data):
         """
@@ -134,12 +157,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
             data = json.loads(text_data)
             message_type = data.get("type")
 
+            # ✅ refresh presence on ANY incoming message
+            if self.user.is_authenticated:
+                await self.presence_active(self.user.id)
+
             if message_type == "chat_message":
                 await self.handle_chat_message(data)
             elif message_type == "delete_message":
                 await self.handle_delete_message(data)
             elif message_type == "typing":
                 await self.handle_typing(data)
+            elif message_type == "ping":
+               pass  # ignore pings
             else:
                 await self.send_error("unknown message type")
         except json.JSONDecodeError:
@@ -332,7 +361,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.exception("Error saving message")
             return None
-
+        
+    # Database operations wrapped with database_sync_to_async
     @database_sync_to_async
     def delete_message(self, message_id):
         """
@@ -345,4 +375,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
             message.delete()
             return True
         except Message.DoesNotExist:
-            return False
+            return 
+        
+# from here added online offline status        
+    # Database operation for showing online status
+    @database_sync_to_async
+    def presence_active(self, user_id):
+        from django.core.cache import cache
+        cache.set(f"online:{user_id}", True, timeout=10)  # set online with 10 sec timeout
+
+    @database_sync_to_async
+    def presence_deactive(self, user_id):
+        from django.core.cache import cache
+        try:
+            cache.delete(f"online:{user_id}")
+        except ValueError:
+            pass
+
+
+  

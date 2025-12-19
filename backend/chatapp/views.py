@@ -51,6 +51,12 @@ class RegisterView(APIView):
         return Response({"id": user.id, "username": user.username}, status=201)
 
 
+class UserDetailView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+
 # Conversation list and creation view
 class ConversationListCreateView(APIView):
     """

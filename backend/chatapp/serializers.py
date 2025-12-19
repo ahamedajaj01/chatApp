@@ -34,9 +34,14 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 # Serializer to show basic user details
 class UserSerializer(serializers.ModelSerializer):
+    is_online = serializers.SerializerMethodField() # Custom field to show online status
     class Meta:
         model = User
-        fields = ('id','username','first_name','last_name')
+        fields = ('id','username','first_name','last_name','is_online')
+    
+    def get_is_online(self, obj):
+        from django.core.cache import cache
+        return cache.get(f"online:{obj.id}") is not None
 
 
 # Serializer for chat messages
@@ -77,7 +82,8 @@ class ConversationListSerializer(serializers.ModelSerializer):
     
     # Get usernames of all participants in the conversation
     def get_participants(self, obj):
-        return [p.user.username for p in obj.participants.select_related('user').all()]
+        user = [p.user for p in obj.participants.select_related('user').all()]
+        return UserSerializer(user, many=True).data
     
     # Get unread message count for the logged-in user
     def get_unread_count(self, obj):

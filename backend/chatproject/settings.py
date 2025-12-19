@@ -51,11 +51,27 @@ INSTALLED_APPS = [
 # Add ASGI application configuration
 ASGI_APPLICATION = 'chatproject.asgi.application'
 
+# Configure Channels to use Redis as the channel layer backend
+# didn't use inmemory for local dev as it doesn't support multiple consumers properly and online presence tracking needs multiple consumers
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+# Configure Redis cache (it's helpful for presence tracking performance)
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient", # Use default client
+        },
     }
 }
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
