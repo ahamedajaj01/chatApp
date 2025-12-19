@@ -11,19 +11,19 @@ function ConversationList({
       <div className="list-group">
         {conversations.map((c, idx) => {
           // helper to extract a comparable key from a participant entry
-          const participantKey = (p) => {
-            if (!p) return null;
-            if (typeof p === "string") return String(p);
-            if (p.id != null) return String(p.id);
-            if (p._id != null) return String(p._id);
-            if (p.user?.id != null) return String(p.user.id);
-            if (p.user?._id != null) return String(p.user._id);
-            return null;
-          };
+          // const participantKey = (p) => {
+          //   if (!p) return null;
+          //   if (typeof p === "string") return String(p);
+          //   if (p.id != null) return String(p.id);
+          //   if (p._id != null) return String(p._id);
+          //   if (p.user?.id != null) return String(p.user.id);
+          //   if (p.user?._id != null) return String(p.user._id);
+          //   return null;
+          // };
 
-          const otherParticipant = c.participants
-            ?.map((p) => ({ p, key: participantKey(p) }))
-            .find((x) => x.key && x.key !== String(currentUserId))?.p;
+          // const otherParticipant = c.participants
+          //   ?.map((p) => ({ p, key: participantKey(p) }))
+          //   .find((x) => x.key && x.key !== String(currentUserId))?.p;
 
           // try common places for a display name
           // const otherName =
@@ -36,21 +36,34 @@ function ConversationList({
           //   null;
           // const displayName = c.name || otherName || `Conversation ${c.id}`;
           // ======================
-          let displayName;
+          // let displayName;
 
-          if (c.name) {
-            displayName = c.name;
-          } else if (
-            otherParticipant &&
-            String(otherParticipant.id) !== String(currentUserId)
-          ) {
-            displayName =
-              otherParticipant.username ||
-              otherParticipant.name ||
-              otherParticipant.email;
-          } else {
-            displayName = "Loading…";
-          }
+          // if (c.name) {
+          //   displayName = c.name;
+          // } else if (
+          //   otherParticipant &&
+          //   String(otherParticipant.id) !== String(currentUserId)
+          // ) {
+          //   displayName =
+          //     otherParticipant.username ||
+          //     otherParticipant.name ||
+          //     otherParticipant.email;
+          // } else {
+          //   displayName = "Loading…";
+          // }
+          const participants = c.participants || [];
+
+// Explicit exclusion — no guessing
+const otherParticipant = participants.filter(
+  p => String(p.id) !== String(currentUserId)
+)[0];
+
+const displayName = c.name
+  ? c.name
+  : otherParticipant
+    ? otherParticipant.username
+    : "Loading…";
+
 
           // ================
 
