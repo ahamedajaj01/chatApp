@@ -32,7 +32,7 @@ python-dotenv==1.2.1
 # PostgreSQL database adapter
 psycopg2-binary
 
-# Django caching with Redis backend
+# Django caching with Redis backend.
 django-redis
 
 
