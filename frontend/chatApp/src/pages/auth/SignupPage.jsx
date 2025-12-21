@@ -16,6 +16,7 @@ export default function SignupPage() {
     username: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
   const [formError, setFormError] = useState(null);
 
@@ -26,14 +27,21 @@ export default function SignupPage() {
 
   // All logic lives in the page:
   const handleSubmit = async (formData) => {
+     // confirm password validation (frontend-only)
+  if (formData.password !== formData.confirmPassword) {
+    setFormError("Passwords do not match!");
+    return;
+  }
+
     const payload = {
       username: formData.name, // map frontend name -> backend username
       email: formData.email,
       password: formData.password,
     };
+   
     try {
       // Call signup thunk. unwrap() throws on rejection so we can catch it here.
-      const result = await dispatch(signup(payload)).unwrap();
+      await dispatch(signup(payload)).unwrap();
 
       // If your slice persisted tokens on signup, remove them now:
       clearTokens(); // remove tokens from localstorage
