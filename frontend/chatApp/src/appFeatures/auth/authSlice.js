@@ -6,10 +6,7 @@
 // - apiClient's refresh logic can dispatch the plain setAuth action
 //   to update tokens when a refresh occurs.
 // -----------------------------------------------------------------
-import {
-  createSlice,
-  createAsyncThunk,
-} from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import authService from "../../api/authService";
 import { saveTokens, loadTokens, clearTokens } from "../../api/tokenUtils";
 
@@ -49,12 +46,11 @@ export const signup = createAsyncThunk(
       const data = await authService.signup(payload);
       return data;
     } catch (error) {
-      // Pass full data object if available so UI can parse field-specific errors
-      if (error?.response?.data) {
-        return rejectWithValue(error.response.data);
-      }
       return rejectWithValue(
-        error?.message || "Signup failed"
+        error?.response?.data?.detail ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Signup failed"
       );
     }
   }
@@ -228,7 +224,7 @@ const authSlice = createSlice({
       })
       .addCase(signup.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.payload || action.error?.message;
+        // state.error = action.payload ?? action.error.message;
       });
 
     //  Refresh (manual)
