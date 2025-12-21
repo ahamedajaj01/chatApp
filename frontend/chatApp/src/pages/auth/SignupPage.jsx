@@ -9,7 +9,7 @@ import Alert from "../../components/common-ui/Alert";
 export default function SignupPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { status, error } = useSelector((s) => s.auth);
+  const { status } = useSelector((s) => s.auth);
 
   // local form state lives here (page owns it)
   const [formData, setFormData] = useState({
@@ -42,32 +42,23 @@ export default function SignupPage() {
       // Then navigate to the login page
       navigate("/login");
     } catch (error) {
-      // signup failed — UI shows error from slice, you can also show toast here
-      let message = "Signup failed. Please try again.";
-
-      if (typeof err === "string") message = error;
-      else if (error?.detail) message = error.detail;
-      else if (error?.message) message = error.message;
-
-      setFormError(message);
-      console.error("Signup failed:", error);
+      setFormError(error);
     }
   };
 
   return (
     <>
-    {/* Alert message */}
-    <Alert
-  type="error"
-  message={formError}
-  onClose={() => setFormError(null)}
-/>
+      {/* Alert message */}
+      <Alert
+        type="error"
+        message={formError}
+        onClose={() => setFormError(null)}
+      />
       <SignupForm
         form={formData}
         onChange={handleChange}
         onSubmit={handleSubmit}
         status={status}
-        error={error}
       />
     </>
   );

@@ -68,20 +68,15 @@ export class AuthService {
 
   // Internal helper to extract a human-friendly error message
   _extractError(error) {
-    // axios error shape handling
-    if (error?.response?.data) {
-      // backend provided structured errors (object/string)
-      const data = error.response.data;
-      // Prefer message field, then stringified data, else statusText
-      return (
-        data.message ||
-        JSON.stringify(data) ||
-        error.response.statusText ||
-        error.message
-      );
-    }
-    return error.message || "unknown error";
-  }
+  return {
+    response: {
+      data: error.response?.data,
+      status: error.response?.status,
+    },
+    message: error.message,
+  };
+}
+
 }
 
 const authService = new AuthService();

@@ -6,10 +6,7 @@
 // - apiClient's refresh logic can dispatch the plain setAuth action
 //   to update tokens when a refresh occurs.
 // -----------------------------------------------------------------
-import {
-  createSlice,
-  createAsyncThunk,
-} from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import authService from "../../api/authService";
 import { saveTokens, loadTokens, clearTokens } from "../../api/tokenUtils";
 
@@ -48,12 +45,27 @@ export const signup = createAsyncThunk(
       const data = await authService.signup(payload);
       return data;
     } catch (error) {
-      return rejectWithValue(
-        error?.response?.data?.detail ||
-          error?.response?.data?.message ||
-          error?.message ||
-          "Signup failed"
-      );
+       const data = error.response?.data;
+
+  let message = "Signup failed";
+
+  if (typeof data === "string") {
+    message = data;
+  } else if (data?.detail) {
+    message = data.detail;
+  } else if (data?.message) {
+    message = data.message;
+  } 
+  // ✅ ADD THIS BLOCK (THIS IS THE FIX)
+  else {
+    // Handle Django/DRF validation errors: { field: [msg] }
+    const firstKey = data && Object.keys(data)[0];
+    if (firstKey && Array.isArray(data[firstKey])) {
+      message = data[firstKey][0];
+    }
+  }
+
+  return rejectWithValue(message);
     }
   }
 );
@@ -226,7 +238,7 @@ const authSlice = createSlice({
       })
       .addCase(signup.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.payload || action.error?.message;
+        // state.error = action.payload ?? action.error.message;
       });
 
     //  Refresh (manual)
