@@ -27,11 +27,12 @@ export const login = createAsyncThunk(
       return data;
     } catch (error) {
       // rejectWithValue is useful so your UI can read action.payload on error
-      return rejectWithValue(
-        error?.detail ||
-          error?.message ||
-          "Login failed! Invalid username or password"
-      );
+      const message =
+        error?.response?.data?.detail ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Login failed! Invalid username or password";
+      return rejectWithValue(message);
     }
   }
 );
@@ -48,11 +49,12 @@ export const signup = createAsyncThunk(
       const data = await authService.signup(payload);
       return data;
     } catch (error) {
+      // Pass full data object if available so UI can parse field-specific errors
+      if (error?.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
       return rejectWithValue(
-        error?.response?.data?.detail ||
-          error?.response?.data?.message ||
-          error?.message ||
-          "Signup failed"
+        error?.message || "Signup failed"
       );
     }
   }
@@ -71,7 +73,7 @@ export const getCurrentUser = createAsyncThunk(
       const user = await authService.getCurrentUser();
       return user;
     } catch (error) {
-      return rejectWithValue(error?.toString?.() || String(error));
+      return rejectWithValue(error?.message || String(error));
     }
   }
 );
@@ -97,7 +99,7 @@ export const refreshAccess = createAsyncThunk(
       // return whatever the backend gave us
       return data;
     } catch (error) {
-      return rejectWithValue(error?.toString?.() || String(error));
+      return rejectWithValue(error?.message || String(error));
     }
   }
 );
@@ -128,7 +130,7 @@ export const logout = createAsyncThunk(
       // still try to clear local state even if server call failed
       clearTokens();
       dispatch({ type: "auth/clearAuth" });
-      return rejectWithValue(error?.toString?.() || String(error));
+      return rejectWithValue(error?.message || String(error));
     }
   }
 );
