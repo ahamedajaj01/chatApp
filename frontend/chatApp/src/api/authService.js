@@ -5,10 +5,10 @@ export class AuthService {
   async login({ username, email, password }) {
     try {
       // Ensure that at least one of username or email is provided
-    if (!username && !email) {
-      console.error('Error: Either username or email must be provided');
-      throw new Error('Either username or email must be provided');
-    }
+      if (!username && !email) {
+        console.error('Error: Either username or email must be provided');
+        throw new Error('Either username or email must be provided');
+      }
       // Accept either username or email depending on backend expectation.
       const body = username ? { username, password } : { email, password };
       // Log the request body to debug
