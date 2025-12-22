@@ -1,5 +1,4 @@
 // src/components/LoginForm.jsx
-import React from "react";
 import { Input, Button } from "../index";
 import { Link } from "react-router-dom";
 
@@ -8,8 +7,6 @@ export default function LoginForm({
   onChange = () => {},
   onSubmit = () => {},
   status = "idle",
-  error = null,
-  formErrors = null,
 }) {
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -30,7 +27,6 @@ export default function LoginForm({
           className="form-control mb-3"
           required
         />
-        {formErrors?.username && <p className="text-danger fs-6 mb-2">{String(formErrors.username)}</p>}
 
         <Input
           label="Password"

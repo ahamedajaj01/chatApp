@@ -16,7 +16,8 @@ export default function LoginPage() {
     username: "",
     password: "",
   });
-  const [formErrors, setFormErrors] = useState(null);
+    const [alert, setAlert] = useState(null);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,7 +30,7 @@ export default function LoginPage() {
       username: form.username, // map frontend name -> backend username
       password: form.password,
     };
-    setFormErrors(null);
+    setAlert(null)
     try {
       // Try logging in. Thunk should return { access, refresh, user? } on success
       const result = await dispatch(login(payload)).unwrap();
@@ -41,15 +42,9 @@ export default function LoginPage() {
       // Post-login: redirect to conversations page
       navigate("/");
     } catch (error) {
-      let message = "Login failed. Please try again.";
-      if (typeof error === "string") {
-        message = error;
-      } else if (error?.detail) {
-        message = error.detail;
-      } else if (error?.message) {
-        message = error.message;
-      }
-      setFormErrors(message);
+      let message = error?.username?.[0] || error?.password?.[0] || error?.detail || "Login failed. Please try again.";
+
+    setAlert({ type: "error", message });
     }
   };
 
@@ -57,20 +52,19 @@ export default function LoginPage() {
   return (
     <>
       {/* Alert message */}
+          {alert && (
       <Alert
-        type="error"
-        message={formErrors}
-        onClose={() => {
-          setFormErrors(null);
-        }}
+        type={alert.type}
+        message={alert.message}
+        onClose={() => setAlert(null)}
       />
+    )}
       <LoginForm
         form={form}
         onChange={handleChange}
         onSubmit={handleSubmit}
         status={status}
         error={error}
-        formErrors={formErrors}
       />
     </>
   );

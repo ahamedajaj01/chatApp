@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Input, Button } from '../index';
 import {Link} from "react-router-dom"
 
-function SignupForm({onSubmit, isLoading}) {
+function SignupForm({onSubmit, status="idle"}) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -35,6 +35,8 @@ function SignupForm({onSubmit, isLoading}) {
           onChange={handleChange}
           placeholder="Enter your username"
         />
+        {/* error message */}
+        
         <Input
           label="Email"
           type="email"
@@ -62,8 +64,8 @@ function SignupForm({onSubmit, isLoading}) {
    
 
         <div className="mt-3">
-          <Button disabled={isLoading} type="submit" className="btn btn-primary w-100">
-  {isLoading ? "Submitting....." : "Register"}
+          <Button disabled={status === "loading"} type="submit" className="btn btn-primary w-100">
+  {status === "loading" ? "Registering....." : "Register"}
           </Button>
         </div>
       </form>

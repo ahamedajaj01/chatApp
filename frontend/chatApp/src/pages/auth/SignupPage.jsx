@@ -18,7 +18,7 @@ export default function SignupPage() {
     password: "",
     confirmPassword: "",
   });
-  const [formError, setFormError] = useState(null);
+  const [alert, setAlert] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,18 +27,18 @@ export default function SignupPage() {
 
   // All logic lives in the page:
   const handleSubmit = async (formData) => {
-     // confirm password validation (frontend-only)
-  if (formData.password !== formData.confirmPassword) {
-    setFormError("Passwords do not match!");
-    return;
-  }
+    // confirm password validation (frontend-only)
+    if (formData.password !== formData.confirmPassword) {
+      setAlert({ type: "error", message: "Passwords do not match!" });
+      return;
+    }
 
     const payload = {
       username: formData.name, // map frontend name -> backend username
       email: formData.email,
       password: formData.password,
     };
-   
+
     try {
       // Call signup thunk. unwrap() throws on rejection so we can catch it here.
       await dispatch(signup(payload)).unwrap();
@@ -46,22 +46,39 @@ export default function SignupPage() {
       // If your slice persisted tokens on signup, remove them now:
       clearTokens(); // remove tokens from localstorage
       dispatch({ type: "auth/clearAuth" }); // reset redux auth state
+ // ✅ show success alert
+    setAlert({
+      type: "success",
+      message: "User registered successfully. Redirecting to login...",
+    });
 
       // Then navigate to the login page
-      navigate("/login");
+      const timer = setTimeout(() => {
+        navigate("/login");
+      }, 1000);
+      return () => clearTimeout(timer);
     } catch (error) {
-      setFormError(error);
+      // Extract a string message from the error object
+      const message =
+        error?.username?.[0] ||
+        error?.email?.[0] ||
+        error?.detail ||
+        "Signup failed";
+    setAlert({ type: "error", message });
     }
   };
 
   return (
     <>
       {/* Alert message */}
-      <Alert
-        type="error"
-        message={formError}
-        onClose={() => setFormError(null)}
-      />
+      {alert && (
+  <Alert
+    type={alert.type}
+    message={alert.message}
+    onClose={() => setAlert(null)}
+  />
+)}
+
       <SignupForm
         form={formData}
         onChange={handleChange}

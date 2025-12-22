@@ -24,12 +24,13 @@ export const login = createAsyncThunk(
       return data;
     } catch (error) {
       // rejectWithValue is useful so your UI can read action.payload on error
-      const message =
-        error?.response?.data?.detail ||
-        error?.response?.data?.message ||
-        error?.message ||
-        "Login failed! Invalid username or password";
-      return rejectWithValue(message);
+      if (error.response) {
+        return rejectWithValue(error.response.data);
+      }
+
+      return rejectWithValue({
+        message: error.message || "Login failed! Invalid username or password",
+      });
     }
   }
 );
@@ -46,12 +47,11 @@ export const signup = createAsyncThunk(
       const data = await authService.signup(payload);
       return data;
     } catch (error) {
-      return rejectWithValue(
-        error?.response?.data?.detail ||
-          error?.response?.data?.message ||
-          error?.message ||
-          "Signup failed"
-      );
+      if (error.response) {
+        return rejectWithValue(error.response.data);
+      }
+
+      return rejectWithValue({ message: error.message || "Signup failed" });
     }
   }
 );
@@ -139,6 +139,7 @@ const initialState = {
   refreshToken: persisted.refresh || null,
   status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
+  success:false,
 };
 const authSlice = createSlice({
   name: "auth",
@@ -215,16 +216,19 @@ const authSlice = createSlice({
       .addCase(signup.pending, (state) => {
         state.status = "loading";
         state.error = null;
+        state.success=false;
       })
       .addCase(signup.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.user = action.payload?.user || null;
         state.accessToken = null;
         state.refreshToken = null;
+        state.success=true;
       })
       .addCase(signup.rejected, (state, action) => {
         state.status = "failed";
-        // state.error = action.payload ?? action.error.message;
+        state.success=false
+        state.error = action.payload ?? action.error.message;
       });
 
     //  Refresh (manual)
