@@ -21,13 +21,7 @@ function SignupForm({onSubmit, isLoading}) {
     e.preventDefault();
     //  Validate & submit to backend
     onSubmit(formData)
-    // clear form data after successfully submit
-    setFormData({
-       name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    })
+    
   };
 
   return (

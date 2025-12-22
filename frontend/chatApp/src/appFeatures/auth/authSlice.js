@@ -24,11 +24,12 @@ export const login = createAsyncThunk(
       return data;
     } catch (error) {
       // rejectWithValue is useful so your UI can read action.payload on error
-      return rejectWithValue(
-        error?.detail ||
-          error?.message ||
-          "Login failed! Invalid username or password"
-      );
+      const message =
+        error?.response?.data?.detail ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Login failed! Invalid username or password";
+      return rejectWithValue(message);
     }
   }
 );
@@ -45,27 +46,12 @@ export const signup = createAsyncThunk(
       const data = await authService.signup(payload);
       return data;
     } catch (error) {
-       const data = error.response?.data;
-
-  let message = "Signup failed";
-
-  if (typeof data === "string") {
-    message = data;
-  } else if (data?.detail) {
-    message = data.detail;
-  } else if (data?.message) {
-    message = data.message;
-  } 
-  // ✅ ADD THIS BLOCK (THIS IS THE FIX)
-  else {
-    // Handle Django/DRF validation errors: { field: [msg] }
-    const firstKey = data && Object.keys(data)[0];
-    if (firstKey && Array.isArray(data[firstKey])) {
-      message = data[firstKey][0];
-    }
-  }
-
-  return rejectWithValue(message);
+      return rejectWithValue(
+        error?.response?.data?.detail ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Signup failed"
+      );
     }
   }
 );
@@ -83,7 +69,7 @@ export const getCurrentUser = createAsyncThunk(
       const user = await authService.getCurrentUser();
       return user;
     } catch (error) {
-      return rejectWithValue(error?.toString?.() || String(error));
+      return rejectWithValue(error?.message || String(error));
     }
   }
 );
@@ -109,7 +95,7 @@ export const refreshAccess = createAsyncThunk(
       // return whatever the backend gave us
       return data;
     } catch (error) {
-      return rejectWithValue(error?.toString?.() || String(error));
+      return rejectWithValue(error?.message || String(error));
     }
   }
 );
@@ -140,7 +126,7 @@ export const logout = createAsyncThunk(
       // still try to clear local state even if server call failed
       clearTokens();
       dispatch({ type: "auth/clearAuth" });
-      return rejectWithValue(error?.toString?.() || String(error));
+      return rejectWithValue(error?.message || String(error));
     }
   }
 );
