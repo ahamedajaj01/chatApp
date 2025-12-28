@@ -14,6 +14,8 @@ import SearchResults from "./chat-ui/SearchResults";
 import SettingsButton from "./setting/SettingButton";
 import SettingsModal from "./setting/SettingModal";
 import ProfileModal from "./userProfile/ProfileModal";
+import ChangePasswordModal from "./setting/ChangePasswordModal";
+import ForgotPasswordModal from "./auth-ui/ForgotPasswordModal";
 
 
 export {
@@ -33,4 +35,6 @@ export {
   SettingsButton,
   SettingsModal,
   ProfileModal,
+  ChangePasswordModal,
+  ForgotPasswordModal,
 };

@@ -11,7 +11,7 @@ export default function PrivateRoute({ redirectTo = "/login" }) {
   const user = useSelector((s) => s.auth.user);
   const authStatus = useSelector((s) => s.auth.status); // optional
 
-  if (authStatus === "loading") {
+  if (authStatus === "loading" && !user) {
     return <div className="p-4 text-center">Checking authentication…</div>;
   }
 

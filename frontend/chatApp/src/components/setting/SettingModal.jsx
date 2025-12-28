@@ -5,7 +5,7 @@ import { setDarkMode } from "../../appFeatures/themeSlice";
 import { logout as logoutSession } from '../../appFeatures/auth/authSlice';
 
 
-export default function SettingsModal({ show, onClose, onSave, user }) {
+export default function SettingsModal({ show, onClose, onSave, user, onChangePassword }) {
   const dispatch = useDispatch();
   const darkMode = useSelector((state) => state.theme.darkMode);
      const navigate = useNavigate();
@@ -53,6 +53,20 @@ export default function SettingsModal({ show, onClose, onSave, user }) {
                 <option value="dark">Dark</option>
               </select>
             </div>
+            {/* Change Password Button */}
+            <hr />
+<div className="d-grid gap-2">
+  <button
+    type="button"
+    className="btn btn-outline-primary"
+    onClick={()=>{
+      onClose?.();
+      onChangePassword?.()
+    }}
+  >
+    Change Password
+  </button>
+  </div>
 
             {/* Logout button */}
             <hr />
