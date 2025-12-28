@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { LoginForm } from "../../components/index";
+import { LoginForm, ForgotPasswordModal } from "../../components/index";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { login, getCurrentUser } from "../../appFeatures/auth/authSlice";
@@ -10,6 +10,7 @@ export default function LoginPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { status, error } = useSelector((s) => s.auth);
+  const [showForgot, setShowForgot] = useState(false);
 
   // local form state lives here (page owns it)
   const [form, setForm] = useState({
@@ -65,6 +66,11 @@ export default function LoginPage() {
         onSubmit={handleSubmit}
         status={status}
         error={error}
+        onForgotPassword={() => setShowForgot(true)}
+      />
+      <ForgotPasswordModal
+        show={showForgot}
+        onClose={() => setShowForgot(false)}
       />
     </>
   );

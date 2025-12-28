@@ -52,6 +52,16 @@ export class AuthService {
     }
   }
 
+  // Change/update password -> expects { old_password, new_password }
+  async changePassword({ oldPassword, newPassword }) {
+    try {
+      const resp = await apiClient.post("/update/password/", { old_password: oldPassword, new_password: newPassword });
+      return resp.data;
+    } catch (error) {
+      throw this._extractError(error);
+    }
+  }
+
   // This function does not clear redux state — it just calls an endpoint if you have one.
   async logout(refreshToken) {
     try {

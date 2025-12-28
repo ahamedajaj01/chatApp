@@ -18,10 +18,10 @@ const Input = (
 
   const isSelect = type === "select";
   const isPassword = type === "password";
-  const inputType = isPassword ? (showPassword ? "text" : "password") : type;
+  const inputType = isPassword && showPassword ? "text" : type;
 
   return (
-    <div className="mb-3 position-relative">
+    <div className="mb-3">
       {label && (
         <label htmlFor={name} className="form-label">
           {label}
@@ -45,8 +45,8 @@ const Input = (
             </option>
           ))}
         </select>
-      ) : (
-        <>
+      ) : isPassword ? (
+        <div className="input-group">
           <input
             id={name}
             ref={ref}
@@ -58,18 +58,27 @@ const Input = (
             className={`form-control ${className}`}
             {...props}
           />
-          {/* Eye icon for password toggle */}
-          {isPassword && (
-            <i
-             className={`fa-solid ${
-  showPassword ? "fa-eye" : "fa-eye-slash"
-} position-absolute top-50 my-3 end-0 translate-middle-y me-2 text-muted cursor-pointer`}
-
-              style={{ cursor: "pointer" }}
-              onClick={() => setShowPassword(!showPassword)}
-            />
-          )}
-        </>
+          <button
+            type="button"
+            className="btn btn-outline-secondary"
+            onClick={() => setShowPassword((v) => !v)}
+            tabIndex={-1}
+          >
+            <i className={`bi ${showPassword ? "bi-eye-slash" : "bi-eye"}`} />
+          </button>
+        </div>
+      ) : (
+        <input
+          id={name}
+          ref={ref}
+          type={inputType}
+          name={name}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          className={`form-control ${className}`}
+          {...props}
+        />
       )}
     </div>
   );

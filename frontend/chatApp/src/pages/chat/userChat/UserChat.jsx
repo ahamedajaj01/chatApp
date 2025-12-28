@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { SettingsModal } from "../../../components"
+import { SettingsModal, ChangePasswordModal } from "../../../components"
 import { ChatLayout, ConversationHeader, MessageInput, ProfileModal } from "../../../components";
 
 
@@ -16,9 +16,7 @@ export default function UserChat() {
 
   // Avatar- user profile
   const [profileOpen, setProfileOpen] = useState(false);
-
-  // For mobile responsive
-  // const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
 
   const {
@@ -27,7 +25,6 @@ export default function UserChat() {
     chatStatus,
     activeConversation,
     setActiveConversation,
-    headerTitleOverride,
     headerTitle,
     setHeaderTitleOverride,
     handleStartConversation,
@@ -131,6 +128,14 @@ export default function UserChat() {
         onClose={() => setShowSetting(false)}
         onSave={() => setShowSetting(false)}
         user={user}
+        onChangePassword={()=>{
+          setShowSetting(false);
+          setShowChangePassword(true)
+        }}
+      />
+      <ChangePasswordModal
+        show={showChangePassword}
+        onClose={() => setShowChangePassword(false)}
       />
     </>
   );

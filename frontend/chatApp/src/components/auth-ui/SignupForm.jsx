@@ -10,6 +10,7 @@ function SignupForm({onSubmit, status="idle"}) {
     confirmPassword: '',
   });
 
+
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -35,7 +36,6 @@ function SignupForm({onSubmit, status="idle"}) {
           onChange={handleChange}
           placeholder="Enter your username"
         />
-        {/* error message */}
         
         <Input
           label="Email"
@@ -61,6 +61,7 @@ function SignupForm({onSubmit, status="idle"}) {
           onChange={handleChange}
           placeholder="Confirm your password"
         />
+        
    
 
         <div className="mt-3">

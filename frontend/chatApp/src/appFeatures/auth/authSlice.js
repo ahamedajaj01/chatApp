@@ -69,6 +69,9 @@ export const getCurrentUser = createAsyncThunk(
       const user = await authService.getCurrentUser();
       return user;
     } catch (error) {
+      if (error.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
       return rejectWithValue(error?.message || String(error));
     }
   }
@@ -95,6 +98,33 @@ export const refreshAccess = createAsyncThunk(
       // return whatever the backend gave us
       return data;
     } catch (error) {
+      if (error.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue(error?.message || String(error));
+    }
+  }
+);
+
+/*
+  THUNK: changePassword
+  - Calls authService.changePassword({ oldPassword, newPassword })
+  - On success, returns response data (could be a message or updated password info)
+
+*/
+export const changePassword = createAsyncThunk(
+  "auth/changePassword",
+  async ({ oldPassword, newPassword }, { rejectWithValue }) => {
+    try {
+      const res = await authService.changePassword({
+        oldPassword,
+        newPassword,
+      });
+      return res;
+    } catch (error) {
+      if (error.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
       return rejectWithValue(error?.message || String(error));
     }
   }
@@ -139,7 +169,7 @@ const initialState = {
   refreshToken: persisted.refresh || null,
   status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
-  success:false,
+  success: false,
 };
 const authSlice = createSlice({
   name: "auth",
@@ -162,6 +192,11 @@ const authSlice = createSlice({
       state.refreshToken = null;
       state.status = "idle";
       state.error = null;
+    },
+
+    resetError: (state) => {
+      state.error = null;
+      state.status = "idle";
     },
   },
 
@@ -216,18 +251,18 @@ const authSlice = createSlice({
       .addCase(signup.pending, (state) => {
         state.status = "loading";
         state.error = null;
-        state.success=false;
+        state.success = false;
       })
       .addCase(signup.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.user = action.payload?.user || null;
         state.accessToken = null;
         state.refreshToken = null;
-        state.success=true;
+        state.success = true;
       })
       .addCase(signup.rejected, (state, action) => {
         state.status = "failed";
-        state.success=false
+        state.success = false;
         state.error = action.payload ?? action.error.message;
       });
 
@@ -257,6 +292,21 @@ const authSlice = createSlice({
         clearTokens();
       });
 
+    // Update/change password
+    builder
+      .addCase(changePassword.pending, (state) => {
+        state.status = "loading"
+      })
+      .addCase(changePassword.fulfilled, (state, action) => {
+        state.status = "succeeded"
+        state.error = null
+
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.status = "failed"
+        state.error = action.payload
+      });
+
     //   Logout
     builder
       .addCase(logout.pending, (state) => {
@@ -280,5 +330,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { setAuth, clearAuth } = authSlice.actions;
+export const { setAuth, clearAuth, resetError } = authSlice.actions;
 export default authSlice.reducer;

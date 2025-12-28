@@ -9,7 +9,8 @@ validate incoming data from API requests.
 
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Conversation, ConversationParticipant, Message
+from .models import Conversation, Message
+from django.contrib.auth.password_validation import validate_password
 
 # Get the default User model
 User = get_user_model()
@@ -19,14 +20,17 @@ User = get_user_model()
 class RegisterSerializer(serializers.ModelSerializer):
      # Password field should not be shown in response and must be at least 6 characters
      password = serializers.CharField(write_only=True, min_length=6)
+     email = serializers.EmailField(required=True)
+
 
      class Meta:
          model = User
-         fields = ("id", "username", "password")
+         fields = ("id", "username", "password", "email")
 
      # Create a new user with hashed password
      def create(self, validated_data):
-        user = User(username=validated_data["username"])
+        print("VALIDATED_DATA:", validated_data)
+        user = User(username=validated_data["username"], email=validated_data["email"])
         user.set_password(validated_data["password"])  # hash password
         user.save()
         return user
@@ -43,6 +47,15 @@ class UserSerializer(serializers.ModelSerializer):
         from django.core.cache import cache
         return cache.get(f"online:{obj.id}") is not None
 
+# Update/Change password serializer
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(write_only=True, required=True)
+    new_password = serializers.CharField(write_only=True, required=True, min_length=6)
+
+# Validate new password strength
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value
 
 # Serializer for chat messages
 class MessageSerializer(serializers.ModelSerializer):

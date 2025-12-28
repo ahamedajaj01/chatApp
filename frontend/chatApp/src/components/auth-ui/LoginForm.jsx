@@ -7,6 +7,7 @@ export default function LoginForm({
   onChange = () => {},
   onSubmit = () => {},
   status = "idle",
+  onForgotPassword,
 }) {
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -38,6 +39,12 @@ export default function LoginForm({
           className="form-control mb-3"
           required
         />
+        {/* Forgot Password */} 
+        <div className="d-flex justify-content-end mb-3">
+         <Button type="button" variant="link" size="sm" onClick={onForgotPassword}>
+          Forget Password?
+          </Button>
+        </div>
     
 
         <div className="d-grid">
