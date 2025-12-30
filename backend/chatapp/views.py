@@ -341,7 +341,6 @@ class SendResetPasswordView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
-        print(f"DEBUG: Received password reset request for data: {request.data}", flush=True)
         serializer = SendResetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"]
@@ -355,7 +354,6 @@ class SendResetPasswordView(APIView):
             # Actually send the email
             try:
                 from django.core.mail import send_mail
-                print(f"DEBUG: Sending email to {email} from {settings.DEFAULT_FROM_EMAIL}", flush=True)
                 send_mail(
                     subject="Password Reset Request",
                     message=f"Hello,\n\nYou requested a password reset. Click the link below to reset your password:\n\n{reset_link}\n\nIf you did not request this, please ignore this email.",
@@ -363,7 +361,6 @@ class SendResetPasswordView(APIView):
                     recipient_list=[email],
                     fail_silently=False,
                 )
-                print(f"SUCCESS: Password reset email sent to {email}", flush=True)
             except Exception as e:
                 print(f"ERROR: Failed to send email to {email}: {e}", flush=True)
         else:
