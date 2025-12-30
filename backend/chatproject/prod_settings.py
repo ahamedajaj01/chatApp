@@ -19,16 +19,13 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR/ '.env')
 
-
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG","False").lower() == "true"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS").split(",")
-
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 
 # Application definition
 
@@ -50,8 +47,6 @@ INSTALLED_APPS = [
 ASGI_APPLICATION = 'chatproject.asgi.application'
 
 # Configure Channels to use Redis as the channel layer backend
-# didn't use inmemory for local dev as it doesn't support multiple consumers properly and online presence tracking:
-
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
@@ -63,17 +58,17 @@ CHANNEL_LAYERS = {
         },
     },
 }
-# Configure Redis cache (it's helpful for presence tracking performance)
+
+# Configure Redis cache
 CACHES = {
     "default": {
-        "BACKEND": "django_redis.cache.RedisCache", # Use Redis cache backend(cache used for presence tracking)
+        "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": os.getenv("REDIS_URL"),
         "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient", # Use default client
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     }
 }
-
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -105,7 +100,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'chatproject.wsgi.application'
 
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -117,23 +111,12 @@ DATABASES = {
     }
 }
 
-
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 REST_FRAMEWORK = {
@@ -156,58 +139,29 @@ CORS_ALLOW_CREDENTIALS = False
 SESSION_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SAMESITE = "None"
 
-
 SECURE_REFERRER_POLICY = "same-origin"
-CORS_ALLOW_HEADERS = [
-    "authorization",
-    "content-type",
-]
-CORS_ALLOW_METHODS = [
-    "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
-]
-
-
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
+CORS_ALLOW_HEADERS = ["authorization", "content-type"]
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles' 
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# For production
-CORS_ALLOWED_ORIGINS= os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 
-# JWT Configuration
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(
-        minutes=int(os.getenv("ACCESS_TOKEN_LIFETIME", 60))
-    ),
-    'REFRESH_TOKEN_LIFETIME': timedelta(
-        days=int(os.getenv("REFRESH_TOKEN_LIFETIME", 7))
-    ),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(os.getenv("ACCESS_TOKEN_LIFETIME", 60))),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=int(os.getenv("REFRESH_TOKEN_LIFETIME", 7))),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
 }
 
-# Logging — simple production logging to console (adapt to file/Sentry as needed)
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO').upper()
 LOGGING = {
     'version': 1,
@@ -227,15 +181,20 @@ LOGGING = {
     }
 }
 
-# password reselt link url 
 PASSWORD_RESET_LINK_URL = os.getenv("PASSWORD_RESET_LINK_URL")
-# sending reset password link to emails in production
+
+# Email settings
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
-EMAIL_USE_TLS = True
+# Use TLS for port 587 or 2525, use SSL for port 465
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() == "true"
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False").lower() == "true"
+EMAIL_TIMEOUT = 10 # Timeout in seconds to prevent hanging
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+
 if not DEFAULT_FROM_EMAIL:
-    raise ValueError("DEFAULT_FROM_EMAIL is not set in environment variables")
+    # Fallback to noreply if not set, but better to raise error in prod
+    DEFAULT_FROM_EMAIL = "noreply@example.com"
