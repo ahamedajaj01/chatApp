@@ -13,4 +13,6 @@ urlpatterns = [
     path("users/search/",views.UserSearchView.as_view(),name="user-search"),
     path("message/<int:pk>/delete-for-me/",views.MessageDeleteForMeView.as_view(),name="message-delete-for-me"),
     path("conversation/<int:pk>/hide-for-me/",views.ConversationHideView.as_view(),name="conversation-hide-for-me"),
+    path("reset-password/", views.SendResetPasswordView.as_view(), name="reset-password"),
+    path("reset-password/confirm/", views.ResetPasswordView.as_view(), name="reset-password-confirm"),
 ]

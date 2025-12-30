@@ -16,6 +16,7 @@ import SettingsModal from "./setting/SettingModal";
 import ProfileModal from "./userProfile/ProfileModal";
 import ChangePasswordModal from "./setting/ChangePasswordModal";
 import ForgotPasswordModal from "./auth-ui/ForgotPasswordModal";
+import ResetPasswordModal from "./auth-ui/ResetPasswordModal";
 
 
 export {
@@ -37,4 +38,5 @@ export {
   ProfileModal,
   ChangePasswordModal,
   ForgotPasswordModal,
+  ResetPasswordModal,
 };

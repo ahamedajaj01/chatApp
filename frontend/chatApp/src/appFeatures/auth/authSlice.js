@@ -161,6 +161,45 @@ export const logout = createAsyncThunk(
   }
 );
 
+/*
+Thunk: sendPasswordResetEmail
+  - Calls authService.sendPasswordResetEmail(email)
+  - On success, returns response data (could be a message)
+*/
+export const sendPasswordResetEmail = createAsyncThunk(
+  "auth/sendPasswordResetEmail",
+  async (email, { rejectWithValue }) => {
+    try {
+      const res = await authService.sendPasswordResetEmail(email);
+      return res;
+    } catch (error) {
+      if (error.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
+  }
+}
+);
+
+/*
+Thunk: resetPassword
+  - Calls authService.resetPassword({ uid, token, newPassword })
+  - On success, returns response data (could be a message)
+*/
+export const resetPassword = createAsyncThunk(
+  "auth/resetPassword",
+  async ({ uid, token, newPassword }, { rejectWithValue }) => {
+    try {
+      const res = await authService.resetPassword({ uid, token, newPassword });
+      return res;
+    } catch (error) {
+      if (error.response?.data) {
+        return rejectWithValue(error.response.data);
+      }
+  }
+}
+);
+
+
 // Seed initial state from persisted storage so refresh survives page reload
 const persisted = loadTokens();
 const initialState = {
@@ -327,6 +366,35 @@ const authSlice = createSlice({
         state.refreshToken = null;
         state.error = null;
       });
+
+      // sendPasswordResetEmail
+    builder
+      .addCase(sendPasswordResetEmail.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(sendPasswordResetEmail.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.error = null;
+      })
+      .addCase(sendPasswordResetEmail.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload
+      });
+
+      // resetPassword
+    builder
+      .addCase(resetPassword.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(resetPassword.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.error = null;
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload
+      });
+
   },
 });
 
