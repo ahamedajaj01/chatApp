@@ -4,7 +4,7 @@ It includes API endpoints for user registration, conversation management,
 message handling, message deletion and conversation hiding.
 
 """ 
-
+from chatproject import settings
 from django.shortcuts import render, get_object_or_404
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
@@ -12,6 +12,9 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from rest_framework import status, permissions, generics
 from rest_framework.decorators import api_view, permission_classes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -27,6 +30,8 @@ from .serializers import (
     UserSearchSerializer,
     UserSerializer,
     RegisterSerializer,
+    SendResetPasswordSerializer,
+    ResetPasswordSerializer,
 )
 
 # Get the default User model
@@ -329,3 +334,67 @@ class ConversationHideView(APIView):
         participant.deleted_at = timezone.now()
         participant.save(update_fields=["deleted_at"])
         return Response({"ok": True})
+
+
+# View for sending reset password link
+class SendResetPasswordView(APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        serializer = SendResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+        # send reset if user with email exists
+        user = User.objects.filter(email=email).first()
+        if user:
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            reset_link = f"{settings.PASSWORD_RESET_LINK_URL}/{uid}/{token}/"
+            
+            # Actually send the email
+            try:
+                from django.core.mail import send_mail
+                send_mail(
+                    subject="Password Reset Request",
+                    message=f"Hello,\n\nYou requested a password reset. Click the link below to reset your password:\n\n{reset_link}\n\nIf you did not request this, please ignore this email.",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[email],
+                    fail_silently=False,
+                )
+                print(f"Password reset email sent to {email}")
+            except Exception as e:
+                print(f"Error sending password reset email to {email}: {e}")
+
+        # Always return success response to avoid email enumeration
+        return Response(
+            {"detail": f"Reset link has been sent to the email: {email}."},
+            status=status.HTTP_200_OK,
+        )
+
+
+# View for resetting password
+class ResetPasswordView(APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        uid = serializer.validated_data["uid"]
+        token = serializer.validated_data["token"]
+        new_password = serializer.validated_data["new_password"]
+
+        # Decode uid to get user
+        try:
+            user_id = force_bytes(urlsafe_base64_decode(uid)) # it will decode to bytes
+            user = User.objects.get(pk=user_id) # get user by primary key
+        except Exception:
+            return Response({"detail": "Invalid Reset Link"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validate token
+        if not default_token_generator.check_token(user, token):
+            return Response({"detail": "Invalid or Expired reset Token"}, status=status.HTTP_400_BAD_REQUEST)
+        # Set new password
+        user.set_password(new_password)
+        user.save()
+        return Response({"detail": "Password has been reset successfully."}, status=status.HTTP_200_OK)
+    

@@ -7,6 +7,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import { LoginPage, Home, SignupPage, UserChat } from "./pages";
 import { setDarkMode } from "./appFeatures/themeSlice";
 import useChatListSocket from "./appFeatures/chat/hooks/useChatListSocket";
+import {ResetPasswordModal} from "./components/index";
 
 
 function App() {
@@ -48,6 +49,7 @@ const isChatRoute = location.pathname.startsWith('/chats');
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<SignupPage />} />
+          <Route path="/reset-password/:uid/:token" element={<ResetPasswordModal  />} />
         </Route>
 
         {/* Private routes (requires auth) */}

@@ -76,6 +76,23 @@ export class AuthService {
     }
   }
 
+  // This function used to send reset password link to email
+  async sendPasswordResetEmail(email){
+    try {
+      await apiClient.post("/reset-password/", { email });
+    } catch (error) {
+      throw this._extractError(error);
+    }
+  }
+  // This function used to reset password using uid and token from email link
+  async resetPassword({ uid, token, newPassword }){
+    try {
+      await apiClient.post("/reset-password/confirm/", { uid, token, new_password: newPassword });
+    } catch (error) {
+      throw this._extractError(error);
+    }
+  }
+
   // Internal helper to extract a human-friendly error message
   _extractError(error) {
   return {

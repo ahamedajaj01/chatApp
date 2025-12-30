@@ -144,3 +144,17 @@ class UserSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id','username')
+
+
+# serializer for send reset link for resetting password
+class SendResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+# serializer for resetting password
+class ResetPasswordSerializer(serializers.Serializer):
+    uid = serializers.CharField(write_only=True, required=True)
+    token = serializers.CharField(write_only=True, required=True)
+    new_password = serializers.CharField(write_only=True, required=True, min_length=8)
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value
