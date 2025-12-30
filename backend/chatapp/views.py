@@ -354,6 +354,7 @@ class SendResetPasswordView(APIView):
             # Actually send the email
             try:
                 from django.core.mail import send_mail
+                print(f"DEBUG: Sending email to {email} from {settings.DEFAULT_FROM_EMAIL}")
                 send_mail(
                     subject="Password Reset Request",
                     message=f"Hello,\n\nYou requested a password reset. Click the link below to reset your password:\n\n{reset_link}\n\nIf you did not request this, please ignore this email.",
@@ -361,9 +362,11 @@ class SendResetPasswordView(APIView):
                     recipient_list=[email],
                     fail_silently=False,
                 )
-                print(f"Password reset email sent to {email}")
+                print(f"SUCCESS: Password reset email sent to {email}")
             except Exception as e:
-                print(f"Error sending password reset email to {email}: {e}")
+                print(f"ERROR: Failed to send email to {email}: {e}")
+        else:
+            print(f"DEBUG: No user found with email {email}")
 
         # Always return success response to avoid email enumeration
         return Response(
