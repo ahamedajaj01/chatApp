@@ -176,8 +176,8 @@ export const sendPasswordResetEmail = createAsyncThunk(
       if (error.response?.data) {
         return rejectWithValue(error.response.data);
       }
+    }
   }
-}
 );
 
 /*
@@ -195,8 +195,8 @@ export const resetPassword = createAsyncThunk(
       if (error.response?.data) {
         return rejectWithValue(error.response.data);
       }
+    }
   }
-}
 );
 
 
@@ -328,27 +328,6 @@ const authSlice = createSlice({
         state.refreshToken = null;
         state.status = "idle";
         state.error = "Session expired";
-        clearTokens();
-      });
-
-    // Update/change password
-    builder
-      .addCase(changePassword.pending, (state) => {
-        state.status = "loading"
-      })
-      .addCase(changePassword.fulfilled, (state, action) => {
-        state.status = "succeeded"
-        state.error = null
-
-      })
-      .addCase(changePassword.rejected, (state, action) => {
-        state.status = "failed"
-        state.error = action.payload
-      });
-
-    //   Logout
-    builder
-      .addCase(logout.pending, (state) => {
         state.status = "loading";
       })
       .addCase(logout.fulfilled, (state) => {
@@ -367,32 +346,31 @@ const authSlice = createSlice({
         state.error = null;
       });
 
-      // sendPasswordResetEmail
+    // Update/change password
     builder
-      .addCase(sendPasswordResetEmail.pending, (state) => {
-        state.status = "loading";
+      .addCase(changePassword.fulfilled, (state, action) => {
+        state.error = null
       })
-      .addCase(sendPasswordResetEmail.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.error = null;
-      })
-      .addCase(sendPasswordResetEmail.rejected, (state, action) => {
-        state.status = "failed";
+      .addCase(changePassword.rejected, (state, action) => {
         state.error = action.payload
       });
 
-      // resetPassword
+    // sendPasswordResetEmail
     builder
-      .addCase(resetPassword.pending, (state) => {
-        state.status = "loading";
+      .addCase(sendPasswordResetEmail.fulfilled, (state, action) => {
+        state.error = null;
       })
+      .addCase(sendPasswordResetEmail.rejected, (state, action) => {
+        state.error = action.payload;
+      });
+
+    // resetPassword
+    builder
       .addCase(resetPassword.fulfilled, (state, action) => {
-        state.status = "succeeded";
         state.error = null;
       })
       .addCase(resetPassword.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload
+        state.error = action.payload;
       });
 
   },

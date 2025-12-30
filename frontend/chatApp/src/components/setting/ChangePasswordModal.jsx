@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { changePassword, resetError } from "../../appFeatures/auth/authSlice";
-import {Input} from "../index"
+import { Input } from "../index"
 
 export default function ChangePasswordModal({ show, onClose }) {
   const dispatch = useDispatch();
@@ -9,9 +9,12 @@ export default function ChangePasswordModal({ show, onClose }) {
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
     if (show) {
       dispatch(resetError());
+      setIsLoading(false);
     }
   }, [show, dispatch]);
 
@@ -19,6 +22,7 @@ export default function ChangePasswordModal({ show, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     try {
       await dispatch(
         changePassword({ oldPassword, newPassword })
@@ -31,10 +35,10 @@ export default function ChangePasswordModal({ show, onClose }) {
     } catch (err) {
       // ❌ failure → modal stays open
       console.error("Change password failed:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  const isLoading = status === "loading";
 
   const renderError = () => {
     if (!error) return null;
@@ -81,7 +85,7 @@ export default function ChangePasswordModal({ show, onClose }) {
                   required
                   disabled={isLoading}
                 />
-                
+
               </div>
 
               <div className="mb-3">
@@ -94,7 +98,7 @@ export default function ChangePasswordModal({ show, onClose }) {
                   required
                   disabled={isLoading}
                 />
-              
+
               </div>
             </div>
 
