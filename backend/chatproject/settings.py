@@ -195,7 +195,7 @@ SIMPLE_JWT = {
 }
 
 # password reselt link url from env
-PASSWORD_RESET_LINK_URL = os.getenv("password_reset_link_url")
+PASSWORD_RESET_LINK_URL = os.getenv("PASSWORD_RESET_LINK_URL")
 
 # In production, use an actual email backend like SMTP
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

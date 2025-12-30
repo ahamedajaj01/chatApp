@@ -35,6 +35,9 @@ psycopg2-binary
 # Django caching with Redis backend.
 django-redis
 
+# SendGrid email backend for Django
+sendgrid==6.12.5
+
 
 # =========================
 # Indirect dependencies

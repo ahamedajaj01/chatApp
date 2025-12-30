@@ -228,7 +228,7 @@ LOGGING = {
 }
 
 # password reselt link url 
-PASSWORD_RESET_LINK_URL = os.getenv("password_reset_link_url")
+PASSWORD_RESET_LINK_URL = os.getenv("PASSWORD_RESET_LINK_URL")
 # sending reset password link to emails in production
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = os.getenv("EMAIL_HOST")
