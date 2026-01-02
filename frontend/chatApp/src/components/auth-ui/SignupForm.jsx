@@ -35,6 +35,7 @@ function SignupForm({onSubmit, status="idle"}) {
           value={formData.name}
           onChange={handleChange}
           placeholder="Enter your username"
+          required
         />
         
         <Input
@@ -44,6 +45,7 @@ function SignupForm({onSubmit, status="idle"}) {
           value={formData.email}
           onChange={handleChange}
           placeholder="Enter your email"
+          required
         />
         <Input
           label="Password"
@@ -52,6 +54,7 @@ function SignupForm({onSubmit, status="idle"}) {
           value={formData.password}
           onChange={handleChange}
           placeholder="Create a password"
+          required
         />
         <Input
           label="Confirm Password"
@@ -60,6 +63,7 @@ function SignupForm({onSubmit, status="idle"}) {
           value={formData.confirmPassword}
           onChange={handleChange}
           placeholder="Confirm your password"
+          required
         />
         
    
