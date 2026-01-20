@@ -53,8 +53,18 @@ class RegisterView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data) # Deserialize incoming data
         serializer.is_valid(raise_exception=True) # Validate data or raise error
-        user = serializer.save()
-        return Response({"id": user.id, "username": user.username}, status=201)
+        try:
+            user = serializer.save()
+            return Response({"id": user.id, "username": user.username}, status=201)
+        except Exception as e:
+            # Catch database integrity errors (like duplicate email) that might slip through validation
+            from django.db import IntegrityError
+            if isinstance(e, IntegrityError):
+                return Response(
+                    {"detail": "A user with this email or username already exists."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            raise e
 
 
 class UserDetailView(generics.RetrieveAPIView):

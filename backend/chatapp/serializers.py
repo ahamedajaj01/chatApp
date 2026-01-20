@@ -18,22 +18,35 @@ User = get_user_model()
 
 # Serializer used for user registration
 class RegisterSerializer(serializers.ModelSerializer):
-     # Password field should not be shown in response and must be at least 6 characters
-     password = serializers.CharField(write_only=True, min_length=6)
-     email = serializers.EmailField(required=True)
+    # Password field should not be shown in response and must be at least 6 characters
+    password = serializers.CharField(write_only=True, min_length=6)
+    email = serializers.EmailField(required=True)
 
+    class Meta:
+        model = User
+        fields = ("id", "username", "password", "email")
 
-     class Meta:
-         model = User
-         fields = ("id", "username", "password", "email")
+    # Custom validation for email to ensure uniqueness and provide clear error
+    def validate_email(self, value):
+        email = value.lower().strip()
+        if User.objects.filter(email__iexact=email).exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return email
 
-     # Create a new user with hashed password
-     def create(self, validated_data):
-        print("VALIDATED_DATA:", validated_data)
-        user = User(username=validated_data["username"], email=validated_data["email"])
-        user.set_password(validated_data["password"])  # hash password
-        user.save()
-        return user
+    # Custom validation for username to ensure uniqueness
+    def validate_username(self, value):
+        username = value.strip()
+        if User.objects.filter(username__iexact=username).exists():
+            raise serializers.ValidationError("A user with this username already exists.")
+        return username
+
+    # Create a new user using the manager's create_user method
+    def create(self, validated_data):
+        return User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
 
 
 # Serializer to show basic user details

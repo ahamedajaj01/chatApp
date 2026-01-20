@@ -38,6 +38,10 @@ django-redis
 # SendGrid email backend for Django
 sendgrid==6.12.5
 
+# supabase database configuration
+dj-database-url==3.1.0
+psycopg2-binary==2.9.11
+
 
 # =========================
 # Indirect dependencies

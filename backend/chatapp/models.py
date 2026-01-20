@@ -4,13 +4,15 @@ It includes models for conversations, participants, messages,
 and message deletion tracking. These models store and manage
 chat-related data in the database.
 """
-
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
 
-# Reference to the custom or default User model
-User = settings.AUTH_USER_MODEL
+
+
+class User(AbstractUser):
+    email = models.EmailField(unique=True)
 
 # Model for chat conversations
 class Conversation(models.Model):
@@ -52,7 +54,7 @@ class ConversationParticipant(models.Model):
 
     # User who participates in the conversation
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         related_name='conversations',
         on_delete=models.CASCADE
     )
@@ -85,7 +87,7 @@ class Message(models.Model):
 
     # User who sent the message
     sender = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         related_name='sent_messages',
         on_delete=models.CASCADE
     )

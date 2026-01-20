@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
+# import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -113,6 +114,14 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#    "default": dj_database_url.parse(
+#         os.getenv("SUPABASE_URL"),
+#         conn_max_age=600,
+#         ssl_require=True,
+#     )
+# }
+
 
 
 # Password validation
@@ -132,6 +141,10 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+
+AUTH_USER_MODEL = "chatapp.User"
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
