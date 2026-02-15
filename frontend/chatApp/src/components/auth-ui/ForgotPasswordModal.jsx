@@ -10,9 +10,9 @@ export default function ForgotPasswordModal({ show, onClose }) {
     const [status, setStatus] = useState("idle");
 const [alert, setAlert] = useState(null);
 
-    const handleSubmit = async (e) => {
-    e.preventDefault()
-    setStatus("loading");
+    const handleSubmit = async () => {
+      if (!email) return;
+      setAlert(null);
     try {
         await dispatch(sendPasswordResetEmail(email)).unwrap();
         setStatus("success");
@@ -67,7 +67,7 @@ useEffect(() => {
             <Button variant="secondary" onClick={onClose}>
               Cancel
             </Button>
-            <Button variant="primary" onClick={handleSubmit} disabled={status === "loading"? true : false}>
+            <Button type="submit" variant="primary" onClick={handleSubmit} disabled={status === "loading"}>
                 {status === "loading" ? "Sending..." : "Send Reset Link"}
             </Button>
           </div>
