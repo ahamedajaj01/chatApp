@@ -25,8 +25,13 @@ const [alert, setAlert] = useState(null);
     }
 }
 
-  if (!show) return null;
-
+useEffect(() => {
+    if (!show) {
+        setStatus("idle");
+        setEmail("");
+        setAlert(null);
+    }
+}, [show]);
   return (
     <>
  
