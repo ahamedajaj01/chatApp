@@ -32,11 +32,12 @@ useEffect(() => {
         setAlert(null);
     }
 }, [show]);
+if (!show) return null;
   return (
     <>
  
 
-    <div className="modal fade show" style={{ display: "block", background: "rgba(0,0,0,.5)" }}>
+    <div className="modal fade show d-block" style={{ background: "rgba(0,0,0,.5)" }}>
            {alert && (
       <Alert
         type={alert.type}
